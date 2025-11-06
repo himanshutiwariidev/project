@@ -19,7 +19,7 @@ import jacket from "../assets/jacket.jpeg";
 import jeans from "../assets/jeans.webp";
 import joggers from "../assets/joggers.webp";
 import oversize from "../assets/oversizetshirt.avif";
-import polo from "../assets/polo.avif";
+import polo from "../assets/Polo.avif";
 import regular from "../assets/regulartshirt.avif";
 
 /* URL structure: /products/men|women|customize and /products/:category/:subcategory */
