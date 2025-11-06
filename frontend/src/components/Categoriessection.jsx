@@ -10,7 +10,7 @@ import imagefive from "../assets/womenpolo.avif"
 import imagesix from "../assets/womenoversize.avif"
 import regular from "../assets/regulartshirt.avif";
 import oversize from "../assets/oversizetshirt.avif";
-import polo from "../assets/polo.avif";
+import polo from "../assets/Polo.avif";
 import formal from "../assets/formal.jpeg";
 import jeans from "../assets/jeans.webp";
 import joggers from "../assets/joggers.webp";
