@@ -5,7 +5,7 @@ import axios from "axios";
 import { CartContext } from "../context/CartContext";
 import { AuthContext } from "../context/AuthContext";
 import { useUI } from "../context/UIContext";
-import { FaCartPlus, FaUserCircle, FaChevronDown, FaChevronRight, FaSearch } from "react-icons/fa";
+import { FaCartPlus, FaUserCircle, FaChevronDown, FaChevronRight, FaSearch, FaUser } from "react-icons/fa";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { RiCloseFill } from "react-icons/ri";
 import { FaHeart } from "react-icons/fa";
@@ -334,9 +334,9 @@ useEffect(() => {
 
   // ---- UI ------------------------------------------------------
   return (
-    <nav className="bg-white shadow-sm fixed top-0 w-full z-50 border-b border-gray-200">
+    <nav className="bg-white shadow-sm fixed top-[45px] w-full z-50 border-b border-gray-200">
       {/* 3-column grid keeps logo centered on mobile too */}
-      <div className="container mx-auto grid grid-cols-3 items-center px-4 sm:px-6 lg:px-8 py-3 gap-2">
+      <div className="container mx-auto grid grid-cols-3 items-center px-4 sm:px-6 lg:px-8 py-1 gap-2">
         {/* Left: hamburger on mobile + desktop categories on lg */}
         <div className="flex items-center gap-3 dropdown-container">
           <button
@@ -446,7 +446,7 @@ useEffect(() => {
           {/* wishlist */}
           <button
   onClick={() => navigate("/wishlist")}
-  className="relative text-gray-700 hover:text-black transition-colors"
+  className="hidden md:block relative text-gray-700 hover:text-black transition-colors"
 >
   <FaHeart className="text-xl" />
   {wishlist.length > 0 && (
@@ -455,6 +455,15 @@ useEffect(() => {
     </span>
   )}
 </button>
+
+<div className="md:hidden">
+  <button
+    onClick={() => handleMobileLinkClick(user ? "/profile" : "/login")}
+    className="flex items-center w-full px-2 py-4 text-gray-700 hover:text-black hover:bg-gray-50 transition-colors text-sm border-b border-gray-100"
+  >
+    <FaUser className="w-5 h-5" />
+  </button>
+</div>
 
 
           {/* Profile button -> page, not dropdown */}
@@ -553,14 +562,14 @@ useEffect(() => {
             >
               {user ? "Profile" : "Login"}
             </button>
-            {!user && (
+           {/*  {!user && (
               <button
                 onClick={() => handleMobileLinkClick("/register")}
                 className="block w-full text-left px-6 py-4 text-gray-700 hover:bg-gray-50 transition-colors text-sm"
               >
                 Register
               </button>
-            )}
+            )} */}
           </div>
         </div>
       )}

@@ -27,7 +27,10 @@ exports.createOrder = async (req, res) => {
       city: req.body["address[city]"],
       state: req.body["address[state]"],
       postalCode: req.body["address[postalCode]"],
+      
     };
+        const selectedSide = req.body.selectedSide || "";
+
 
     if (!products.length || !totalAmount || !address || !address.name) {
       return res.status(400).json({ message: "Missing or invalid order data" });
@@ -88,6 +91,8 @@ exports.createOrder = async (req, res) => {
       customizationUploads: {
         image: customImagePath,
         pdf: customPdfPath,
+       selectedSide: selectedSide, // ✅ YEH LINE ADD KARO
+
       },
       address,
     });
@@ -518,5 +523,246 @@ exports.deleteOrder = async (req, res) => {
     res.json({ message: "Order deleted" });
   } catch (err) {
     res.status(500).json({ message: "Failed to delete order" });
+  }
+};
+
+// NEW: User requests return
+exports.requestReturn = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { reason } = req.body;
+    const userId = req.user._id;
+
+    const order = await Order.findById(orderId).populate('user');
+    
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Check if order belongs to user
+    if (order.user._id.toString() !== userId.toString()) {
+      return res.status(403).json({ message: 'Not authorized to return this order' });
+    }
+
+    // Check if order is delivered
+    if (order.orderStatus !== 'delivered') {
+      return res.status(400).json({ 
+        message: 'Only delivered orders can be returned' 
+      });
+    }
+
+    // Check if return window is available (24 hours)
+    const deliveredTime = new Date(order.updatedAt).getTime();
+    const currentTime = new Date().getTime();
+    const hoursDifference = (currentTime - deliveredTime) / (1000 * 60 * 60);
+    
+    if (hoursDifference > 24) {
+      return res.status(400).json({ 
+        message: 'Return window expired. Returns must be requested within 24 hours of delivery.' 
+      });
+    }
+
+    // Check if return already requested
+    if (order.returnRequested) {
+      return res.status(400).json({ 
+        message: 'Return already requested for this order' 
+      });
+    }
+
+    // Mark as return requested
+    order.returnRequested = true;
+    order.returnReason = reason;
+    order.returnRequestedAt = new Date();
+    order.returnBy = 'user';
+    order.returnStatus = 'requested';
+
+    await order.save();
+    
+    // Send email notification to admin about return request
+    if (process.env.ADMIN_EMAIL && process.env.ADMIN_EMAIL_PASS) {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.ADMIN_EMAIL,
+          pass: process.env.ADMIN_EMAIL_PASS,
+        },
+      });
+
+      const productDetails = order.products.map((p) => {
+        const name = p.product?.name || "Unknown";
+        return `<li>${p.quantity} × ${name}</li>`;
+      }).join("");
+
+      const mailOptions = {
+        from: '"Shop Notification" <no-reply@yourstore.com>',
+        to: process.env.ADMIN_EMAIL,
+        subject: `🔄 Return Request for Order #${order._id}`,
+        html: `
+          <h2>Return Request Received</h2>
+          <p><strong>Order ID:</strong> ${order._id}</p>
+          <p><strong>User:</strong> ${order.user.name} (${order.user.email})</p>
+          <p><strong>Reason:</strong> ${reason}</p>
+          <p><strong>Delivered At:</strong> ${order.updatedAt.toLocaleString()}</p>
+          <p><strong>Return Requested At:</strong> ${new Date().toLocaleString()}</p>
+          <p><strong>Time Since Delivery:</strong> ${Math.floor(hoursDifference)} hours</p>
+          <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
+          <p><strong>Products:</strong></p>
+          <ul>${productDetails}</ul>
+          <p><em>Please check the admin panel to process this return request.</em></p>
+        `,
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (emailErr) {
+        console.error("❌ Failed to send return email:", emailErr);
+      }
+    }
+
+    res.json({ 
+      message: 'Return request submitted. Admin will process it shortly.', 
+      order 
+    });
+    
+  } catch (error) {
+    console.error('Return request error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// NEW: Admin gets return requests
+exports.getReturnRequests = async (req, res) => {
+  try {
+    const returnRequests = await Order.find({
+      returnRequested: true,
+      returnStatus: 'requested'
+    })
+    .populate('user', 'name email')
+    .populate('products.product')
+    .sort({ returnRequestedAt: -1 });
+    
+    res.json(returnRequests);
+  } catch (error) {
+    console.error('Get return requests error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// NEW: Admin updates return status
+exports.updateReturnStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    const order = await Order.findById(orderId).populate('user');
+    
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    order.returnStatus = status;
+
+    if (status === 'approved') {
+      // Process refund and coin adjustments
+      order.orderStatus = 'returned';
+      
+      // Refund coins if any were redeemed
+      if (order.coinsRedeemed > 0) {
+        await User.findByIdAndUpdate(order.user._id, {
+          $inc: { coinsBalance: order.coinsRedeemed }
+        });
+        console.log(`✅ Coins refunded: ${order.coinsRedeemed} to user ${order.user._id}`);
+      }
+      
+      // Cancel pending coins if not already credited
+      if (order.coinsEarned > 0 && order.coinStatus === 'pending') {
+        order.coinStatus = 'cancelled';
+        console.log(`❌ Pending coins cancelled: ${order.coinsEarned} for order ${order._id}`);
+      }
+
+      // Send email to user about approved return
+      if (process.env.ADMIN_EMAIL && process.env.ADMIN_EMAIL_PASS) {
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: process.env.ADMIN_EMAIL,
+            pass: process.env.ADMIN_EMAIL_PASS,
+          },
+        });
+
+        const mailOptions = {
+          from: '"Shop Support" <support@yourstore.com>',
+          to: order.user.email,
+          subject: `✅ Return Request Approved - #${order._id}`,
+          html: `
+            <h2>Your Return Request Has Been Approved</h2>
+            <p>Dear ${order.user.name},</p>
+            <p>Your return request for order <strong>#${order._id}</strong> has been approved.</p>
+            ${order.coinsRedeemed > 0 ? 
+              `<p><strong>${order.coinsRedeemed} coins</strong> have been refunded to your account.</p>` : 
+              ''
+            }
+            <p><strong>Return Details:</strong></p>
+            <ul>
+              <li>Order ID: ${order._id}</li>
+              <li>Total Amount: ₹${order.totalAmount}</li>
+              <li>Return Reason: ${order.returnReason}</li>
+            </ul>
+            <p>If you have any questions, please contact our support team.</p>
+            <p>Thank you,<br>Your Store Team</p>
+          `,
+        };
+
+        try {
+          await transporter.sendMail(mailOptions);
+        } catch (emailErr) {
+          console.error("❌ Failed to send return approval email:", emailErr);
+        }
+      }
+
+    } else if (status === 'rejected') {
+      // Revert return request
+      order.returnRequested = false;
+      order.returnStatus = 'rejected';
+      // Keep the order status as delivered
+
+      // Send email to user about rejected return
+      if (process.env.ADMIN_EMAIL && process.env.ADMIN_EMAIL_PASS) {
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: process.env.ADMIN_EMAIL,
+            pass: process.env.ADMIN_EMAIL_PASS,
+          },
+        });
+
+        const mailOptions = {
+          from: '"Shop Support" <support@yourstore.com>',
+          to: order.user.email,
+          subject: `❌ Return Request Rejected - #${order._id}`,
+          html: `
+            <h2>Your Return Request Has Been Rejected</h2>
+            <p>Dear ${order.user.name},</p>
+            <p>Your return request for order <strong>#${order._id}</strong> has been rejected.</p>
+            <p><strong>Reason:</strong> The return window has expired or the product doesn't meet return criteria.</p>
+            <p>If you have any questions, please contact our support team.</p>
+            <p>Thank you,<br>Your Store Team</p>
+          `,
+        };
+
+        try {
+          await transporter.sendMail(mailOptions);
+        } catch (emailErr) {
+          console.error("❌ Failed to send return rejection email:", emailErr);
+        }
+      }
+    }
+
+    await order.save();
+    res.json({ message: `Return ${status}`, order });
+    
+  } catch (error) {
+    console.error('Update return status error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

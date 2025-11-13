@@ -5,13 +5,6 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const CATEGORIES = ["men", "women", "customize"];
 
-/**
- * Bestseller section:
- * - Same source as ProductList: GET /api/products?category=men|women|customize
- * - Mix teenon category ki list ko interleave karke show
- * - 4 products visible; har X sec me auto-rotate
- * - Hover/Touch hold pe pause
- */
 export default function Bestsellers({
   chunkSize = 4,
   rotateMs = 6000,
@@ -20,7 +13,7 @@ export default function Bestsellers({
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
-  const [items, setItems] = useState([]); // mixed list from all categories
+  const [items, setItems] = useState([]);
   const [page, setPage] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef(null);
@@ -33,38 +26,68 @@ export default function Bestsellers({
       setLoading(true);
       setErr("");
       try {
+        console.log("Fetching products from API...");
+        
         const responses = await Promise.all(
           CATEGORIES.map((cat) =>
             axios
               .get(`${apiUrl}/api/products`, {
                 params: { category: cat },
               })
-              .then((r) => (Array.isArray(r.data) ? r.data : r.data?.products || []))
-              .catch(() => [])
+              .then((r) => {
+                const products = Array.isArray(r.data) ? r.data : r.data?.products || [];
+                console.log(`Category ${cat}:`, products.length, "products");
+                return products;
+              })
+              .catch((error) => {
+                console.log(`Error fetching ${cat}:`, error.message);
+                return [];
+              })
           )
         );
 
-        // responses = [men[], women[], customize[]]
-        // Interleave to keep categories mixed: a1,b1,c1,a2,b2,c2...
-        const mixed = interleave(responses);
-
-        // Optional: lightweight shuffle so it looks dynamic between reloads
-        const shuffled = knuthShuffle(mixed);
-
-        // De-dup by _id/id/name just in case
+        const allProducts = responses.flat();
+        
+        // STRONG Deduplication
         const seen = new Set();
-        const deduped = shuffled.filter((p) => {
-          const key = p._id || p.id || p.slug || p.name;
-          if (!key || seen.has(key)) return false;
-          seen.add(key);
-          return true;
+        const deduped = [];
+        
+        allProducts.forEach((p) => {
+          const key = p._id || p.id || `${p.name}-${p.price}-${p.image}`;
+          
+          if (!key) {
+            deduped.push(p);
+            return;
+          }
+          
+          if (!seen.has(key)) {
+            seen.add(key);
+            deduped.push(p);
+          }
         });
 
+        console.log("After deduplication:", deduped.length, "products");
+
+        // Ab categories ke hisab se filter karo
+        const categoryWise = CATEGORIES.map(cat => 
+          deduped.filter(p => {
+            const productCategory = (p.category || p.gender || p.segment || "").toLowerCase();
+            return productCategory.includes(cat);
+          })
+        );
+        
+        // Fir interleave aur shuffle karo
+        const mixed = interleave(categoryWise);
+        const shuffled = knuthShuffle(mixed);
+
+        console.log("Final items:", shuffled.length);
+
         if (!cancelled) {
-          setItems(deduped);
+          setItems(shuffled);
           setPage(0);
         }
       } catch (e) {
+        console.error("Fetch error:", e);
         if (!cancelled) {
           setErr("Bestsellers load karne mein dikkat aa gayi.");
           setItems([]);
@@ -80,7 +103,7 @@ export default function Bestsellers({
     };
   }, [apiUrl]);
 
-  // Auto-rotate
+  // Auto-rotate - ONLY if we have more than chunkSize products
   useEffect(() => {
     if (paused) return;
     if (items.length <= chunkSize) return;
@@ -94,14 +117,19 @@ export default function Bestsellers({
 
   const slice = useMemo(() => {
     if (items.length === 0) return [];
+    
+    // Agar products kam hain chunkSize se, toh bas available products show karo
+    if (items.length <= chunkSize) {
+      return items;
+    }
+    
     const pages = totalPages(items.length, chunkSize);
     const safePage = page % pages;
     const start = safePage * chunkSize;
     const end = start + chunkSize;
-    // wrap-around slice
-    return end <= items.length
-      ? items.slice(start, end)
-      : [...items.slice(start), ...items.slice(0, end - items.length)];
+    
+    // Normal slice - no wrap around
+    return items.slice(start, end);
   }, [items, page, chunkSize]);
 
   const pagesCount = useMemo(
@@ -109,8 +137,15 @@ export default function Bestsellers({
     [items.length, chunkSize]
   );
 
-  const goPrev = () => setPage((p) => (p - 1 + pagesCount) % pagesCount);
-  const goNext = () => setPage((p) => (p + 1) % pagesCount);
+  const goPrev = () => {
+    if (items.length <= chunkSize) return; // No navigation if not enough products
+    setPage((p) => (p - 1 + pagesCount) % pagesCount);
+  };
+  
+  const goNext = () => {
+    if (items.length <= chunkSize) return; // No navigation if not enough products
+    setPage((p) => (p + 1) % pagesCount);
+  };
 
   return (
     <section
@@ -126,23 +161,25 @@ export default function Bestsellers({
           <p className="text-gray-600 mt-1">Top picks across Men, Women and Customize</p>
         </div>
 
-        {/* Desktop arrows */}
-        <div className="hidden sm:flex items-center gap-2">
-          <button
-            className="p-2 rounded-full border border-gray-300 hover:bg-gray-50"
-            onClick={goPrev}
-            aria-label="Previous"
-          >
-            <FaChevronLeft />
-          </button>
-          <button
-            className="p-2 rounded-full border border-gray-300 hover:bg-gray-50"
-            onClick={goNext}
-            aria-label="Next"
-          >
-            <FaChevronRight />
-          </button>
-        </div>
+        {/* Desktop arrows - ONLY show if we have enough products */}
+        {items.length > chunkSize && (
+          <div className="hidden sm:flex items-center gap-2">
+            <button
+              className="p-2 rounded-full border border-gray-300 hover:bg-gray-50"
+              onClick={goPrev}
+              aria-label="Previous"
+            >
+              <FaChevronLeft />
+            </button>
+            <button
+              className="p-2 rounded-full border border-gray-300 hover:bg-gray-50"
+              onClick={goNext}
+              aria-label="Next"
+            >
+              <FaChevronRight />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Loading skeleton */}
@@ -164,30 +201,44 @@ export default function Bestsellers({
 
       {!loading && !err && (
         <div className="relative">
-          {/* Mobile arrows */}
-          <div className="sm:hidden flex justify-between mb-3">
-            <button
-              className="p-2 rounded-full border border-gray-300 hover:bg-gray-50"
-              onClick={goPrev}
-              aria-label="Previous"
-            >
-              <FaChevronLeft />
-            </button>
-            <button
-              className="p-2 rounded-full border border-gray-300 hover:bg-gray-50"
-              onClick={goNext}
-              aria-label="Next"
-            >
-              <FaChevronRight />
-            </button>
-          </div>
+          {/* Mobile arrows - ONLY show if we have enough products */}
+          {items.length > chunkSize && (
+            <div className="sm:hidden flex justify-between mb-3">
+              <button
+                className="p-2 rounded-full border border-gray-300 hover:bg-gray-50"
+                onClick={goPrev}
+                aria-label="Previous"
+              >
+                <FaChevronLeft />
+              </button>
+              <button
+                className="p-2 rounded-full border border-gray-300 hover:bg-gray-50"
+                onClick={goNext}
+                aria-label="Next"
+              >
+                <FaChevronRight />
+              </button>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {slice.map((p) => (
-              <BestCard key={p._id || p.id || p.slug || p.name} product={p} apiUrl={apiUrl} />
+            {slice.map((p, index) => (
+              <BestCard 
+                key={`${p._id}-${p.id}-${index}`} 
+                product={p} 
+                apiUrl={apiUrl} 
+              />
             ))}
+            
+            {/* Agar products kam hain, toh empty spaces show karo */}
+            {slice.length < chunkSize &&
+              Array.from({ length: chunkSize - slice.length }).map((_, index) => (
+                <div key={`empty-${index}`} className="border border-gray-200 rounded-2xl p-3 opacity-0" />
+              ))
+            }
           </div>
 
+          {/* Dots - ONLY show if we have enough products */}
           {pagesCount > 1 && (
             <div className="flex justify-center gap-2 mt-4">
               {Array.from({ length: pagesCount }).map((_, i) => (

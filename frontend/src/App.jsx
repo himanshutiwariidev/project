@@ -7,6 +7,8 @@ import Footer from "./components/Footer";
 import ReviewSubmissionPage from "./pages/Reveiwpage";
 import { AuthProvider } from "./context/AuthContext";
 import WishlistPage from "./pages/WishlistPage";
+import MarqueeOffers from "./section/Marquee";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Lazy components
 const Navbar = lazy(() => import("./components/navBar"));
@@ -48,14 +50,14 @@ function App() {
   return (
     <>
     <AuthProvider>
+      <MarqueeOffers/>
       <Suspense fallback={<LoadingSpinner />}>
         <Navbar />
-
         {/* ✅ Render the sidebar when flag is true */}
         {showCartSidebar && (
           <CartSidebar onClose={() => setShowCartSidebar(false)} />
         )}
-
+        <ScrollToTop/>
         <main>
           <Routes>
             <Route path="/" element={<Home />} />

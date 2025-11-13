@@ -6,6 +6,7 @@ import { AuthContext } from "../context/AuthContext"; // ✅ AuthContext import
 import axios from "axios";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { useWishlist } from "../context/WishlistContext";
+import { GoDotFill } from "react-icons/go";
 
 import {
   FaCartPlus,
@@ -151,7 +152,9 @@ const ProductDetailPage = () => {
         totalAmount: product.price * quantity,
         customUploads: {
           singleFile: customFile || null,
-          isCustomize
+          isCustomize,
+          selectedSide: isCustomize ? selectedSide : "" // ✅ YEH LINE ADD KARO
+
         }
       },
     });
@@ -276,7 +279,7 @@ const ProductDetailPage = () => {
   const totalPrice = product.price * quantity;
 
   return (
-    <div className="min-h-screen bg-white pt-20">
+    <div className="min-h-screen bg-white pt-7">
       {toast && (
         <div className={`fixed top-24 right-6 z-50 p-4 rounded border-l-4 shadow-lg transition-all duration-300 ${toast.type === "success"
             ? "bg-white border-green-500 text-green-800"
@@ -371,7 +374,7 @@ const ProductDetailPage = () => {
             )}
 
             <div className="space-y-3">
-              <h1 className="text-3xl lg:text-4xl font-bold text-black leading-tight">{product.name}</h1>
+              <h1 className="text-xl md:text-4xl md:font-bold text-black leading-tight">{product.name}</h1>
 
               {/* Rating Display */}
               <div className="flex items-center space-x-4">
@@ -387,7 +390,7 @@ const ProductDetailPage = () => {
                 </span>
               </div>
 
-              <div className="text-3xl font-bold text-black">₹{product.price.toLocaleString()}</div>
+              <div className="text-2xl md:font-bold text-black">₹{product.price.toLocaleString()}</div>
             </div>
 
             <div className="space-y-4">
@@ -401,7 +404,7 @@ const ProductDetailPage = () => {
                 <ul className="space-y-2">
                   {product.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start space-x-3 text-gray-600">
-                      <FaCheck className="text-black text-sm mt-1 flex-shrink-0" />
+                      <GoDotFill className="text-black text-sm mt-1 flex-shrink-0" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -455,7 +458,6 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Customization upload */}
-            {/* Customization upload */}
             {isCustomize && (
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-black tracking-wide uppercase">
@@ -472,7 +474,7 @@ const ProductDetailPage = () => {
                       <button
                         key={side}
                         onClick={() => setSelectedSide(side)}
-                        className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors duration-200 ${selectedSide === side
+                        className={`px-4 py-2 border rounded-sm text-sm font-medium transition-colors duration-200 ${selectedSide === side
                             ? "bg-black text-white border-black"
                             : "border-gray-300 text-gray-700 hover:border-gray-400 hover:text-black"
                           }`}
@@ -484,22 +486,30 @@ const ProductDetailPage = () => {
                 </div>
 
                 {/* File Upload */}
-                {selectedSide && (
-                  <div className="space-y-2 mt-4">
-                    <label className="block text-sm text-gray-700 font-medium">
-                      Upload file for {selectedSide.toLowerCase()}:
-                    </label>
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.webp,.gif,.pdf"
-                      onChange={(e) => setCustomFile(e.target.files?.[0] || null)}
-                      className="block w-full text-sm text-gray-700"
-                    />
-                    <p className="text-xs text-gray-500">
-                      Please upload a clear image or PDF. This file will be attached to your order.
-                    </p>
-                  </div>
-                )}
+{selectedSide && (
+  <div className="space-y-2 mt-4">
+    <label className="block text-sm text-gray-700 font-medium">
+      Upload file for {selectedSide.toLowerCase()}:
+    </label>
+
+    <div className="inline-block">
+      <input
+        type="file"
+        accept=".jpg,.jpeg,.png,.webp,.gif,.pdf"
+        onChange={(e) => setCustomFile(e.target.files?.[0] || null)}
+        className="text-sm text-gray-700 cursor-pointer file:mr-3 file:px-3 file:py-1.5 file:border file:border-gray-300 
+                   file:rounded-md file:text-sm file:font-medium 
+                   file:bg-white file:text-gray-700 hover:file:bg-gray-100 
+                   focus:file:border-pink-400 focus:file:ring-2 focus:file:ring-pink-300"
+      />
+    </div>
+
+    <p className="text-xs text-gray-500">
+      Please upload a clear image or PDF. This file will be attached to your order.
+    </p>
+  </div>
+)}
+
               </div>
             )}
 
@@ -509,7 +519,7 @@ const ProductDetailPage = () => {
               <div className="flex space-x-4">
                 <button
                   onClick={handleBuyNow}
-                  className="flex-1 bg-black text-white py-4 px-8 font-semibold tracking-wide uppercase transition-all duration-200 hover:bg-gray-800 flex items-center justify-center space-x-2"
+                  className="flex-1 bg-black text-white md:py-4 md:px-8 py-2 px-4  font-semibold tracking-wide uppercase transition-all duration-200 hover:bg-gray-800 flex items-center justify-center space-x-2"
                 >
                   <FaShoppingBag className="text-lg" />
                   <span>Buy Now</span>
@@ -517,14 +527,16 @@ const ProductDetailPage = () => {
 
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 border border-gray-300 text-gray-700 py-4 px-8 font-semibold tracking-wide uppercase transition-all duration-200 hover:border-gray-400 hover:text-black flex items-center justify-center space-x-2"
+                  className="flex-1 border border-gray-300 text-gray-700 md:py-4 md:px-8 py-2 px-4 font-semibold tracking-wide uppercase transition-all duration-200 hover:border-gray-400 hover:text-black flex items-center justify-center space-x-2"
                 >
                   <FaCartPlus className="text-lg" />
-                  <span>Add to Cart</span>
+                  <span className="hidden md:block">Add to Cart</span>
+                   <span className="md:hidden">Add</span>
+
                 </button>
               </div>
               <div className="text-xs text-gray-500 text-center">
-                ✓ Free shipping on orders over ₹999 • ✓ 30-day return policy
+                ✓ Free shipping on orders over ₹999 • ✓ 03-days return policy
               </div>
             </div>
           </div>
@@ -568,12 +580,12 @@ const ProductDetailPage = () => {
 
         {/* Reviews Section */}
         <div className="mt-16 border-t border-gray-200 pt-16">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">Customer Reviews</h2>
+          <div className="md:max-w-4xl mx-auto">
+            <div className="block md:flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-gray-900">Customer's Reviews</h2>
               <button
                 onClick={() => setShowReviewForm(!showReviewForm)}
-                className="bg-black text-white px-6 py-2 font-medium tracking-wide uppercase hover:bg-gray-800 transition-colors duration-200 flex items-center space-x-2"
+                className="bg-black text-white px-6 py-2 mt-2 font-medium tracking-wide uppercase hover:bg-gray-800 transition-colors duration-200 flex items-center space-x-2"
               >
                 <MessageCircle size={16} />
                 <span>Write Review</span>

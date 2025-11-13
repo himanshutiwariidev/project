@@ -6,7 +6,7 @@ import CategoriesSection from '../components/Categoriessection'
 
 const Home = () => {
   return (
-    <div className='mt-9 pt-10'>
+    <div>
 <Hero/>
 <CategoriesSection/>
 <Bestsellers/>

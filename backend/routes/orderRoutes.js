@@ -10,7 +10,10 @@ const {
   manualCreditCoins,
   cancelOrder, // NEW IMPORT
   getCancellationRequests, // NEW IMPORT
-  updateCancellationStatus, // NEW IMPORT
+  updateCancellationStatus,
+  requestReturn,
+  getReturnRequests,
+  updateReturnStatus, // NEW IMPORT
 } = require('../controllers/orderController');
 const { isAdmin, protect } = require('../middleware/authMiddleware');
 const { uploadOrder } = require('../middleware/UploadMiddleware');
@@ -49,5 +52,14 @@ router.post('/manual-credit-coins', isAdmin, manualCreditCoins);
 
 // Admin: delete an order by ID
 router.delete('/:id', isAdmin, deleteOrder);
+
+// User: request return
+router.patch('/:orderId/return', protect, requestReturn); // NEW ROUTE
+
+// Admin: get return requests
+router.get('/admin/return-requests', isAdmin, getReturnRequests); // NEW ROUTE
+
+// Admin: update return status
+router.patch('/admin/:orderId/return-status', isAdmin, updateReturnStatus); // NEW ROUTE
 
 module.exports = router;

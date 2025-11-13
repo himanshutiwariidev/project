@@ -241,6 +241,12 @@ const applyReferral = () => {
       form.append("payableAmount", String(payableAmount));
       form.append("address", JSON.stringify(address));
       form.append("totalAmount", String(discountedTotal));
+      
+         // ✅ YEH SECTION ADD KARO - Side information
+    if (customUploads?.isCustomize && customUploads.selectedSide) {
+      form.append("selectedSide", customUploads.selectedSide);
+    }
+
 
       if (singleFile) appendSingleFileSmart(form, singleFile);
 
@@ -303,6 +309,9 @@ const applyReferral = () => {
           redeemCoins: effectiveRedeem,
           address,
           totalAmount: discountedTotal,
+                  // ✅ YEH LINE ADD KARO
+        selectedSide: customUploads?.isCustomize ? customUploads.selectedSide : "",
+
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -501,25 +510,7 @@ const applyReferral = () => {
             </div>
           </div>
 
-          {/* Customize upload (optional) */}
-          {isCustomizeOrder && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold mb-4 text-gray-900">Custom Design</h2>
-              <div className="space-y-3">
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={(e) => setSingleFile(e.target.files?.[0] || null)}
-                  className="block w-full text-sm text-gray-900 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-black"
-                />
-                {singleFile && (
-                  <div className="text-sm text-gray-600">
-                    Selected: <span className="font-medium">{singleFile.name}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          
 
           {/* Redeem Coins */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">

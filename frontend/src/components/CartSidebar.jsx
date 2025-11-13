@@ -93,7 +93,7 @@ const CartSidebar = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed top-0 right-0 w-full sm:w-96 h-full bg-white shadow-lg shadow-gray-300 z-50 transition-transform duration-300 transform translate-x-0 overflow-y-auto">
+    <div className="fixed top-12 right-0 w-full sm:w-96 h-full bg-white shadow-lg shadow-gray-300 z-50 transition-transform duration-300 transform translate-x-0 overflow-y-auto">
       <div className="p-4 pb-3 border-b">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Your Cart</h2>

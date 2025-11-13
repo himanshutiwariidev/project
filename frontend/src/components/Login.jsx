@@ -215,7 +215,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 md:mt-2 md:pt-5">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md border border-gray-200">
         {/* Welcome Header */}
         <div className="text-center mb-8">

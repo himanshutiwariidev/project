@@ -73,6 +73,8 @@ const orderSchema = new mongoose.Schema(
     customizationUploads: {
       image: { type: String, default: "" },
       pdf: { type: String, default: "" },
+      selectedSide: { type: String, default: "" }, // ✅ YEH LINE ADD KARO
+
     },
 
     address: {
@@ -84,7 +86,25 @@ const orderSchema = new mongoose.Schema(
       state: { type: String, required: true },
       postalCode: { type: String, required: true },
     },
+    returnRequested: {
+      type: Boolean,
+      default: false
+    },
+    returnReason: String,
+    returnRequestedAt: Date,
+    returnStatus: {
+      type: String,
+      enum: ['requested', 'approved', 'rejected', 'completed'],
+      default: 'requested'
+    },
+    returnBy: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user'
+    },
   },
+  
+  
   { timestamps: true }
 );
 
