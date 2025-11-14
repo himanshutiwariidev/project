@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
-import { AuthContext } from "../context/AuthContext"; // ✅ AuthContext import
+import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { useWishlist } from "../context/WishlistContext";
@@ -30,7 +30,7 @@ const ProductDetailPage = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useContext(CartContext);
-  const { user, token } = useContext(AuthContext); // ✅ AuthContext se user aur token lo
+  const { user, token } = useContext(AuthContext);
   const navigate = useNavigate();
   const [toast, setToast] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -54,9 +54,12 @@ const ProductDetailPage = () => {
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
-  //wishlist
-  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const isWishlisted = !!product && wishlist?.some(item => item?._id === product._id);
+  // Wishlist
+  const { wishlist, addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  
+  // Use the isInWishlist function from context for more reliable checking
+  const isWishlisted = !!product && isInWishlist(product._id);
 
   useEffect(() => {
     console.log('🔐 ProductDetailPage - Auth Context:', {
@@ -123,6 +126,40 @@ const ProductDetailPage = () => {
     setTimeout(() => setToast(null), 3000);
   };
 
+  // Improved wishlist handler
+  const handleWishlistClick = async () => {
+    if (!product) return;
+
+    console.log('❤️ Wishlist click - Auth Status:', {
+      user: user,
+      token: token ? 'Present' : 'Missing',
+      productId: product._id,
+      isWishlisted: isWishlisted
+    });
+
+    if (!user || !token) {
+      showToast("Please login to use wishlist feature", "error");
+      navigate("/login");
+      return;
+    }
+
+    setWishlistLoading(true);
+    try {
+      if (isWishlisted) {
+        await removeFromWishlist(product._id);
+        showToast("Removed from wishlist", "success");
+      } else {
+        await addToWishlist(product._id);
+        showToast("Added to wishlist", "success");
+      }
+    } catch (error) {
+      console.error('❌ Wishlist operation failed:', error);
+      showToast(error.message || "Wishlist operation failed", "error");
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
   const handleAddToCart = () => {
     const sizeToUse = selectedSize || (product?.sizes?.[0] ?? DEFAULT_SIZES[0]);
     const productToAdd = {
@@ -153,8 +190,7 @@ const ProductDetailPage = () => {
         customUploads: {
           singleFile: customFile || null,
           isCustomize,
-          selectedSide: isCustomize ? selectedSide : "" // ✅ YEH LINE ADD KARO
-
+          selectedSide: isCustomize ? selectedSide : ""
         }
       },
     });
@@ -304,28 +340,24 @@ const ProductDetailPage = () => {
             </button>
 
             <button
-              onClick={() => {
-  if (!token) {
-    alert("Please login to use wishlist feature.");
-    navigate("/login");
-    return;
-  }
-  if (isWishlisted) {
-    removeFromWishlist(product._id);
-  } else {
-    addToWishlist(product._id);
-  }
-}}
-
+              onClick={handleWishlistClick}
+              disabled={wishlistLoading}
               className={`flex border py-4 px-8 font-semibold tracking-wide uppercase transition-all duration-200 flex items-center justify-center space-x-2 ${isWishlisted
                   ? "bg-red-500 text-white border-red-500 hover:bg-red-600"
                   : "border-gray-300 text-gray-700 hover:border-gray-400 hover:text-black"
-                }`}
+                } ${wishlistLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {isWishlisted ? <FaHeart /> : <FaRegHeart />}
-              <span>{isWishlisted ? "Wishlisted" : "Add to Wishlist"}</span>
+              {wishlistLoading ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : isWishlisted ? (
+                <FaHeart />
+              ) : (
+                <FaRegHeart />
+              )}
+              <span>
+                {wishlistLoading ? "Processing..." : isWishlisted ? "Wishlisted" : "Add to Wishlist"}
+              </span>
             </button>
-
           </div>
         </div>
       </div>
@@ -486,33 +518,31 @@ const ProductDetailPage = () => {
                 </div>
 
                 {/* File Upload */}
-{selectedSide && (
-  <div className="space-y-2 mt-4">
-    <label className="block text-sm text-gray-700 font-medium">
-      Upload file for {selectedSide.toLowerCase()}:
-    </label>
+                {selectedSide && (
+                  <div className="space-y-2 mt-4">
+                    <label className="block text-sm text-gray-700 font-medium">
+                      Upload file for {selectedSide.toLowerCase()}:
+                    </label>
 
-    <div className="inline-block">
-      <input
-        type="file"
-        accept=".jpg,.jpeg,.png,.webp,.gif,.pdf"
-        onChange={(e) => setCustomFile(e.target.files?.[0] || null)}
-        className="text-sm text-gray-700 cursor-pointer file:mr-3 file:px-3 file:py-1.5 file:border file:border-gray-300 
-                   file:rounded-md file:text-sm file:font-medium 
-                   file:bg-white file:text-gray-700 hover:file:bg-gray-100 
-                   focus:file:border-pink-400 focus:file:ring-2 focus:file:ring-pink-300"
-      />
-    </div>
+                    <div className="inline-block">
+                      <input
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp,.gif,.pdf"
+                        onChange={(e) => setCustomFile(e.target.files?.[0] || null)}
+                        className="text-sm text-gray-700 cursor-pointer file:mr-3 file:px-3 file:py-1.5 file:border file:border-gray-300 
+                                   file:rounded-md file:text-sm file:font-medium 
+                                   file:bg-white file:text-gray-700 hover:file:bg-gray-100 
+                                   focus:file:border-pink-400 focus:file:ring-2 focus:file:ring-pink-300"
+                      />
+                    </div>
 
-    <p className="text-xs text-gray-500">
-      Please upload a clear image or PDF. This file will be attached to your order.
-    </p>
-  </div>
-)}
-
+                    <p className="text-xs text-gray-500">
+                      Please upload a clear image or PDF. This file will be attached to your order.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
-
 
             {/* Actions */}
             <div className="space-y-4">
@@ -531,8 +561,7 @@ const ProductDetailPage = () => {
                 >
                   <FaCartPlus className="text-lg" />
                   <span className="hidden md:block">Add to Cart</span>
-                   <span className="md:hidden">Add</span>
-
+                  <span className="md:hidden">Add</span>
                 </button>
               </div>
               <div className="text-xs text-gray-500 text-center">

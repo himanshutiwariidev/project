@@ -404,7 +404,7 @@ useEffect(() => {
 
         {/* Center: logo image always centered */}
         <div className="justify-self-center">
-          <Link to="/" className="inline-flex items-center">
+          <Link to="/" className="inline-flex items-center pt-3">
             <img src={logoImg} alt="MYRISS" className="h-12 w-auto md:h-15" />
           </Link>
         </div>
@@ -413,7 +413,7 @@ useEffect(() => {
         <div className="flex items-center justify-end gap-3">
           {/* Mobile search toggle shows full overlay */}
           <button
-            className="md:hidden p-2 text-black hover:text-gray-600"
+            className="md:hidden p-2 text-black hover:text-gray-600 "
             onClick={() => {
               setShowSearch(true);
               setIsMenuOpen(false);
@@ -489,12 +489,12 @@ useEffect(() => {
             onClick={(e) => e.stopPropagation()}
           >
             {/* drag handle vibe */}
-            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-gray-200" />
+            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-gray-200 mt-6"/>
             <SearchComponent isMobile={true} />
             <div className="mt-3 text-right">
               <button
                 onClick={() => setShowSearch(false)}
-                className="text-sm px-3 py-1.5 rounded-full border border-gray-300 hover:bg-gray-50"
+                className="text-sm px-3 py-1.5 rounded-full border border-gray-300 hover:bg-gray-50 "
               >
                 Close
               </button>
