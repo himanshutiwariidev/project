@@ -17,6 +17,7 @@ import {
   Search,
 } from "lucide-react";
 import MyOrders from "./MyOrders";
+import { FaHeart } from "react-icons/fa";
 
 const AddressForm = ({ onSave, onClose, initialData }) => {
   const [formData, setFormData] = useState({
@@ -86,7 +87,7 @@ const AddressForm = ({ onSave, onClose, initialData }) => {
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 sm:py-3.5 rounded-lg hover:bg-blue-700 transition-all font-medium text-sm sm:text-base shadow-sm"
+              className="w-full bg-black text-white py-3 sm:py-3.5 rounded-lg  transition-all font-medium text-sm sm:text-base shadow-sm"
             >
               Save Address
             </button>
@@ -302,7 +303,7 @@ useEffect(() => {
             onClick={() => setActiveTab("account")}
             className={`flex-1 px-3 py-2 text-sm rounded-md border ${
               activeTab === "account"
-                ? "bg-blue-600 text-white border-blue-600"
+                ? "bg-black text-white border-black"
                 : "bg-white text-gray-700 border-gray-200"
             }`}
           >
@@ -312,7 +313,7 @@ useEffect(() => {
             onClick={() => setActiveTab("orders")}
             className={`flex-1 px-3 py-2 text-sm rounded-md border ${
               activeTab === "orders"
-                ? "bg-blue-600 text-white border-blue-600"
+                ? "bg-black text-white border-black"
                 : "bg-white text-gray-700 border-gray-200"
             }`}
           >
@@ -377,7 +378,7 @@ useEffect(() => {
             {activeTab === "account" && (
               <>
                 {/* Mobile Profile Card */}
-                <div className="lg:hidden bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-6 mb-2">
+                <div className="lg:hidden bg-black px-4 py-6 mb-2">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm text-white flex items-center justify-center text-xl font-bold border-2 border-white/30">
                       {(user?.name || "U").charAt(0).toUpperCase()}
@@ -412,7 +413,7 @@ useEffect(() => {
                             <button
                               onClick={handleSaveName}
                               disabled={updating}
-                              className="px-3 py-1.5 bg-white text-blue-600 rounded-md text-xs font-medium disabled:opacity-50"
+                              className="px-3 py-1.5 bg-white text-black rounded-md text-xs font-medium disabled:opacity-50"
                             >
                               {updating ? "Saving..." : "Save"}
                             </button>
@@ -437,7 +438,7 @@ useEffect(() => {
                 <div className="hidden lg:block bg-white rounded-lg shadow-sm p-6 mb-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold">
+                      <div className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center text-2xl font-bold">
                         {(user?.name || "U").charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -469,7 +470,7 @@ useEffect(() => {
                             <button
                               onClick={handleSaveName}
                               disabled={updating}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                              className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium disabled:opacity-50"
                             >
                               {updating ? "Saving..." : "Save"}
                             </button>
@@ -540,15 +541,14 @@ useEffect(() => {
                     <p className="text-xs text-gray-400 mt-0.5">Coins</p>
                   </div>
 
-                  <div className="bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-100 col-span-2 lg:col-span-1">
+                  <div onClick={() => window.open('/wishlist')} className="bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-100 col-span-2 lg:col-span-1">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
-                        <Shield className="w-4 h-4 text-green-600" />
+                        <FaHeart className="w-4 h-4 text-red-500" />
                       </div>
-                      <p className="text-xs text-gray-500">Status</p>
+                      <p className="text-xs text-gray-500">Wishlist</p>
                     </div>
-                    <p className="text-xl sm:text-2xl font-bold text-green-600">Active</p>
-                    <p className="text-xs text-gray-400 mt-0.5">All systems normal</p>
+                    <p className="text-xl sm:text-2xl font-bold text-green-600">Favourites</p>
                   </div>
                 </div>
 
@@ -568,7 +568,7 @@ useEffect(() => {
                         setEditingAddress(null);
                         setShowForm(true);
                       }}
-                      className="flex items-center gap-1.5 sm:gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg hover:bg-blue-700 text-xs sm:text-sm font-medium"
+                      className="flex items-center gap-1.5 sm:gap-2 bg-black text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg hover:bg-blue-700 text-xs sm:text-sm font-medium"
                     >
                       <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       <span className="hidden sm:inline">Add Address</span>
@@ -668,7 +668,7 @@ useEffect(() => {
                             "_blank"
                           );
                         }}
-                        className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg hover:bg-blue-700 font-medium text-sm whitespace-nowrap"
+                        className="flex items-center justify-center gap-2 bg-black text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg hover:bg-blue-700 font-medium text-sm whitespace-nowrap"
                       >
                         <Search className="w-4 h-4" />
                         Track Order

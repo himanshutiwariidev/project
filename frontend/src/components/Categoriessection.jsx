@@ -85,7 +85,7 @@ export default function CategoriesSection({ showCount = 3 }) {
         <p className="text-gray-600 mt-1">Only the highlights. The rest is behind “View All.”</p>
       </div>
 
-      <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-3 lg:grid-cols-3">
         {DATA.map((cat) => {
           const topSubs = (cat.subs || []).slice(0, showCount);
           return (

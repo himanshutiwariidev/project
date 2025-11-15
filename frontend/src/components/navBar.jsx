@@ -413,7 +413,7 @@ useEffect(() => {
         <div className="flex items-center justify-end gap-3">
           {/* Mobile search toggle shows full overlay */}
           <button
-            className="md:hidden p-2 text-black hover:text-gray-600 "
+            className="lg:hidden p-2 text-black hover:text-gray-600 "
             onClick={() => {
               setShowSearch(true);
               setIsMenuOpen(false);
@@ -424,7 +424,7 @@ useEffect(() => {
           </button>
 
           {/* Desktop compact search */}
-          <div className="hidden md:block relative">
+          <div className="hidden lg:block relative">
             <div className="w-[240px]">
               <SearchComponent />
             </div>
@@ -481,7 +481,7 @@ useEffect(() => {
       {/* Mobile search overlay: fixed, full-width, pretty, and it works */}
       {showSearch && (
         <div
-          className="fixed inset-0 z-[90] bg-black/30 backdrop-blur-[2px] md:hidden"
+          className="fixed inset-0 z-[90] bg-black/30 backdrop-blur-[2px] lg:hidden"
           onClick={() => setShowSearch(false)}
         >
           <div
