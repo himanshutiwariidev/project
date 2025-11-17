@@ -22,7 +22,7 @@ const Hero = () => {
   }, []);
 
   return (
-    <section className="relative lg:h-screen md:h-[400px] h-[200px] overflow-hidden bg-white md:mt-10 mt-7">
+    <section className="relative lg:h-screen md:h-[400px] h-[200px] overflow-hidden bg-white md:mt-15 mt-11">
       {/* Slides Container */}
       <div className="relative h-full">
         {slides.map((slide, index) => (

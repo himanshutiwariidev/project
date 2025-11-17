@@ -193,7 +193,7 @@ const ProductList = () => {
     <div className="min-h-screen bg-white pt-5">
       {/* Header Section */}
       <div className="bg-gray-50 border-b border-gray-200">
-        <div className="container mx-auto px-6 lg:px-8 py-8">
+        <div className="container mx-auto px-6 lg:px-8 pt-8">
           <div className="text-center space-y-2">
             <h1 className="text-3xl lg:text-4xl font-bold text-black tracking-wide">
               {heading}
@@ -207,7 +207,7 @@ const ProductList = () => {
 
       <div className="container mx-auto px-6 lg:px-8 py-8">
         {/* Navigation Pills */}
-        <div className="mb-8">
+        <div className="mb-12">
           {cat === "all" ? (
             <div className="flex items-center space-x-4 overflow-x-auto pb-2 hide-scrollbar">
               <div className="flex items-center space-x-1 text-sm text-gray-500 font-medium tracking-wide uppercase">
@@ -304,7 +304,7 @@ const ProductList = () => {
 
         {/* Loading State or Product Horizontal Scroll Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center pt-10">
             <div className="text-center space-y-4">
               <div className="w-12 h-12 border-2 border-gray-300 border-t-black rounded-full animate-spin mx-auto"></div>
               <p className="text-gray-500 font-medium tracking-wide uppercase">Loading Products...</p>
@@ -321,14 +321,15 @@ const ProductList = () => {
               role="region"
               aria-label="Products"
               tabIndex={0}
-              className="flex space-x-6 overflow-x-auto pb-6 -mx-6 px-6 snap-x snap-mandatory "
+              className="flex space-x-6 overflow-x-auto pb-6 -mx-6 px-6 hide-scrollbar "
             >
               {filteredProducts.map((prod) => (
                 // each item is non-shrinking and has a fixed/responsive width so horizontal scroll works
-                <div
-                  key={prod._id || prod.id}
-                  className="flex-shrink-0 w-64 sm:w-56 md:w-64 lg:w-72 snap-start"
-                >
+    <div
+      key={prod._id || prod.id}
+      className="flex-shrink-0 w-52  md:w-52 lg:w-55 snap-start"
+    >
+
                   <ProductCard product={prod} />
                 </div>
               ))}
@@ -336,7 +337,7 @@ const ProductList = () => {
 
             {/* Empty State */}
             {filteredProducts.length === 0 && (
-              <div className="col-span-full text-center py-20">
+              <div className="col-span-full text-center py-10">
                 <div className="space-y-4">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
                     <FaSearch className="text-2xl text-gray-400" />

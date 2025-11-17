@@ -12,7 +12,7 @@ const userRoutes = require("./routes/userRoutes");
 const shiprocketRoutes = require("./routes/shiprocketRoutes");
 const reviewRoutes = require("./routes/reveiwRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
-
+const testimonialRoutes = require("./routes/testimonialroutes")
 // ✅ NEW LINE: Wishlist route import
 const wishlistRoutes = require("./routes/wishlistRoutes");
 
@@ -20,8 +20,8 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://chargevita.in",
-  "https://www.chargevita.in"
+  "https://myriss.com",
+  "https://www.myriss.com"
 ];
 
 app.use(
@@ -68,6 +68,8 @@ app.use("/api/payment", paymentRoutes);
 
 // ✅ NEW LINE: Wishlist route mount
 app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/testimonials", testimonialRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("E-commerce Backend Running with Shiprocket 🚀 + Coin System + Wishlist ❤️");

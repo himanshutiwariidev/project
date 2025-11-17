@@ -42,10 +42,11 @@ const ProductCard = ({ product }) => {
       : `Rs ${Number(product?.price || 0)}`;
 
   return (
-    <div className="group bg-white border border-gray-200 hover:border-gray-300 transition-all duration-300 hover:shadow-lg cursor-pointer">
-      {/* Image Container */}
-      <div className="relative overflow-hidden" onClick={handleViewDetails}>
-        <div className="aspect-square bg-gray-50">
+    <div className="group bg-white border border-gray-200 hover:border-gray-300 transition-all duration-300 hover:shadow-md cursor-pointer rounded-md">
+      
+      {/* Image */}
+      <div className="relative overflow-hidden rounded-t-md" onClick={handleViewDetails}>
+        <div className="aspect-[4/5] bg-gray-50">
           <img
             src={imgSrc}
             alt={product?.name || "Product"}
@@ -53,12 +54,12 @@ const ProductCard = ({ product }) => {
             loading="lazy"
           />
         </div>
-        
-        {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
-          <div className="transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
-            <button className="bg-white text-black p-3 shadow-lg hover:bg-gray-100 transition-colors duration-200">
-              <FaEye className="text-lg" />
+
+        {/* Hover View Icon */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
+          <div className="translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all">
+            <button className="bg-white text-black p-2 shadow-md hover:bg-gray-100">
+              <FaEye className="text-md" />
             </button>
           </div>
         </div>
@@ -66,7 +67,7 @@ const ProductCard = ({ product }) => {
         {/* Category Badge */}
         {(product?.category || product?.subcategory) && (
           <div className="absolute top-3 left-3">
-            <span className="bg-white text-black text-xs px-3 py-1 font-medium tracking-wide uppercase shadow-sm">
+            <span className="bg-white text-black text-xs px-2 py-1 font-medium uppercase shadow-sm rounded">
               {product?.category}
               {product?.subcategory ? ` / ${product.subcategory}` : ""}
             </span>
@@ -74,49 +75,41 @@ const ProductCard = ({ product }) => {
         )}
       </div>
 
-      {/* Product Information */}
-      <div className="p-5 space-y-3" onClick={handleViewDetails}>
-        {/* Product Name */}
-        <h3 className="text-lg  text-black leading-tight line-clamp-2 group-hover:text-gray-700 transition-colors duration-200">
+      {/* Info Section */}
+      <div className="p-4 space-y-2" onClick={handleViewDetails}>
+        <h3 className="text-md font-semibold text-black line-clamp-2 leading-snug">
           {product?.name || "Unnamed Product"}
         </h3>
 
-        {/* Price */}
         <div className="flex items-center justify-between">
-          <span className="text-md  text-gray-700">
-            {priceText}
-          </span>
-          <span className="text-sm text-gray-500 font-medium tracking-wide uppercase">
-            Premium Quality
-          </span>
+          <span className="text-sm text-gray-700">{priceText}</span>
+          <span className="text-xs text-gray-500 uppercase">Premium</span>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="px-5 pb-5 space-y-3">
-        {/* Primary CTA */}
+      {/* Buttons */}
+      <div className="px-4 pb-4 space-y-2">
         <button
           onClick={handleBuyNow}
-          className="w-full bg-black text-white py-3 px-6 font-medium tracking-wide uppercase transition-all duration-200 hover:bg-gray-800 active:bg-gray-900"
+          className="w-full bg-black text-white py-2.5 font-medium uppercase text-sm hover:bg-gray-900 transition"
         >
           Buy Now
         </button>
 
-        {/* Secondary Actions */}
-        <div className="flex space-x-3">
+        <div className="flex space-x-2">
           <button
             onClick={handleViewDetails}
-            className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 font-medium tracking-wide uppercase transition-all duration-200 hover:border-gray-400 hover:text-black"
+            className="flex-1 border border-gray-300 text-gray-700 py-2.5 text-sm font-medium uppercase hover:border-gray-400 hover:text-black transition"
           >
-            View Details
+            Details
           </button>
-          
+
           <button
             onClick={handleAddToCart}
-            className="bg-gray-100 text-black p-3 hover:bg-gray-200 transition-colors duration-200 group/cart"
+            className="bg-gray-100 text-black p-2.5 hover:bg-gray-200 transition"
             title="Add to Cart"
           >
-            <FaCartPlus className="text-lg group-hover/cart:scale-110 transition-transform duration-200" />
+            <FaCartPlus className="text-lg" />
           </button>
         </div>
       </div>

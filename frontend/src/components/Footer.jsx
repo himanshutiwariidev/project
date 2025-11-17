@@ -31,8 +31,8 @@ export default function Footer() {
           <ul className="space-y-2 text-gray-400 text-sm">
             <li><a href="#" className="hover:text-white transition">About Us</a></li>
             <li><a href="/reveiw" className="hover:text-white transition">Your Opinion</a></li>
-            <li><a href="#" className="hover:text-white transition">Help Center</a></li>
-            <li><a href="#" className="hover:text-white transition">Bulk order</a></li>
+            <li><a href="https://wa.me/919220502023?text=Hello%20I%20need%20Help" className="hover:text-white transition">Help Center</a></li>
+            <li><a href="https://wa.me/919220502023?text=Hello%20I%20want%20Bulk%20order" className="hover:text-white transition">Bulk order</a></li>
           </ul>
         </div>
 
@@ -60,10 +60,10 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mt-8 text-gray-500 text-sm">
         <p>© {new Date().getFullYear()} MYRISS. All Rights Reserved.</p>
         <div className="flex space-x-5 mt-4 md:mt-0">
-          <a href="#" className="hover:text-white transition"><Facebook className="w-5 h-5" /></a>
-          <a href="#" className="hover:text-white transition"><Instagram className="w-5 h-5" /></a>
-          <a href="#" className="hover:text-white transition"><Twitter className="w-5 h-5" /></a>
-          <a href="#" className="hover:text-white transition"><Linkedin className="w-5 h-5" /></a>
+          <a href="#" className="text-white transition"><Facebook className="w-5 h-5" /></a>
+          <a href="#" className="text-white transition"><Instagram className="w-5 h-5" /></a>
+          <a href="#" className="text-white transition"><Twitter className="w-5 h-5" /></a>
+          <a href="#" className="text-white transition"><Linkedin className="w-5 h-5" /></a>
         </div>
       </div>
     </footer>
