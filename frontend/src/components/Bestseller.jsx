@@ -259,7 +259,7 @@ export default function Bestsellers({
           {/* HORIZONTAL TRACK: use LatestProducts-sized cards */}
           <div
             ref={trackRef}
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory touch-pan-x hide-scrollbar"
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory  hide-scrollbar"
             role="list"
             aria-label="Bestselling products"
           >

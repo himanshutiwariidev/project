@@ -321,7 +321,7 @@ const ProductList = () => {
               role="region"
               aria-label="Products"
               tabIndex={0}
-              className="flex space-x-6 overflow-x-auto pb-6 -mx-6 px-6 snap-x snap-mandatory touch-pan-x"
+              className="flex space-x-6 overflow-x-auto pb-6 -mx-6 px-6 snap-x snap-mandatory "
             >
               {filteredProducts.map((prod) => (
                 // each item is non-shrinking and has a fixed/responsive width so horizontal scroll works
