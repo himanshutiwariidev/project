@@ -190,7 +190,7 @@ const ProductList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pt-20">
+    <div className="min-h-screen bg-white pt-5">
       {/* Header Section */}
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="container mx-auto px-6 lg:px-8 py-8">
@@ -209,7 +209,7 @@ const ProductList = () => {
         {/* Navigation Pills */}
         <div className="mb-8">
           {cat === "all" ? (
-            <div className="flex items-center space-x-4 overflow-x-auto pb-2">
+            <div className="flex items-center space-x-4 overflow-x-auto pb-2 hide-scrollbar">
               <div className="flex items-center space-x-1 text-sm text-gray-500 font-medium tracking-wide uppercase">
                 <FaFilter className="text-xs" />
                 <span>Categories:</span>
@@ -232,7 +232,7 @@ const ProductList = () => {
               </div>
             </div>
           ) : (
-            <div className="flex items-center space-x-4 overflow-x-auto pb-2">
+            <div className="flex items-center space-x-4 overflow-x-auto pb-2 ">
               <div className="flex items-center space-x-1 text-sm text-gray-500 font-medium tracking-wide uppercase">
                 <FaFilter className="text-xs" />
                 <span>Filter:</span>
@@ -302,7 +302,7 @@ const ProductList = () => {
           </div>
         )}
 
-        {/* Loading State or Product Grid */}
+        {/* Loading State or Product Horizontal Scroll Grid */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center space-y-4">
@@ -311,10 +311,28 @@ const ProductList = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((prod) => (
-              <ProductCard key={prod._id || prod.id} product={prod} />
-            ))}
+          // <-- CHANGED: horizontal scroll container instead of grid
+          <div
+            className="relative"
+            aria-hidden={filteredProducts.length === 0}
+          >
+            {/* Scrollable row */}
+            <div
+              role="region"
+              aria-label="Products"
+              tabIndex={0}
+              className="flex space-x-6 overflow-x-auto pb-6 -mx-6 px-6 snap-x snap-mandatory touch-pan-x"
+            >
+              {filteredProducts.map((prod) => (
+                // each item is non-shrinking and has a fixed/responsive width so horizontal scroll works
+                <div
+                  key={prod._id || prod.id}
+                  className="flex-shrink-0 w-64 sm:w-56 md:w-64 lg:w-72 snap-start"
+                >
+                  <ProductCard product={prod} />
+                </div>
+              ))}
+            </div>
 
             {/* Empty State */}
             {filteredProducts.length === 0 && (

@@ -49,6 +49,11 @@ const productSchema = new mongoose.Schema({
       4: { type: Number, default: 0 },
       5: { type: Number, default: 0 }
     }
+  },
+  // ✅ YEH NAYA FIELD ADD KARO (TIMESTAMP)
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
 });
 

@@ -347,7 +347,7 @@ useEffect(() => {
             {isMenuOpen ? <RiCloseFill /> : <GiHamburgerMenu />}
           </button>
 
-          <div className="hidden lg:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-8 pt-2">
             <Link to="/" className="text-black hover:text-gray-600 text-sm font-medium uppercase">
               Home
             </Link>
@@ -405,7 +405,7 @@ useEffect(() => {
         {/* Center: logo image always centered */}
         <div className="justify-self-center">
           <Link to="/" className="inline-flex items-center pt-3">
-            <img src={logoImg} alt="MYRISS" className="h-12 w-auto md:h-15" />
+            <img src={logoImg} alt="MYRISS" className="h-14 w-auto md:h-17" />
           </Link>
         </div>
 

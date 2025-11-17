@@ -141,10 +141,27 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+// ✅ YEH NAYA FUNCTION ADD KARO - Latest Products
+const getLatestProducts = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10; // Default 10 products
+    const latestProducts = await Product.find()
+      .sort({ createdAt: -1 }) // Newest first
+      .limit(limit);
+    
+    res.json(latestProducts);
+  } catch (err) {
+    console.error("❌ Failed to fetch latest products:", err);
+    res.status(500).json({ message: "Failed to fetch latest products" });
+  }
+};
+
 module.exports = {
   getProducts,
   getProductById,
   addProduct,
   updateProduct,
   deleteProduct,
+ getLatestProducts, // ✅ YEH ADD KARO
+
 };

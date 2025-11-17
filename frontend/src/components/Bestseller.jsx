@@ -8,148 +8,185 @@ const CATEGORIES = ["men", "women", "customize"];
 export default function Bestsellers({
   chunkSize = 4,
   rotateMs = 6000,
+  pollMs = 30000, // how often to refetch products
 }) {
   const apiUrl = import.meta.env.VITE_API_URL;
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [items, setItems] = useState([]);
-  const [page, setPage] = useState(0);
   const [paused, setPaused] = useState(false);
-  const timerRef = useRef(null);
 
-  // Fetch like ProductList does, per category
-  useEffect(() => {
-    let cancelled = false;
+  // visibleCount = how many cards should be visible in viewport (responsive)
+  const [visibleCount, setVisibleCount] = useState(() => {
+    if (typeof window === "undefined") return chunkSize;
+    if (window.matchMedia && window.matchMedia("(min-width: 1024px)").matches) return 4;
+    if (window.matchMedia && window.matchMedia("(min-width: 768px)").matches) return 3;
+    return 2;
+  });
 
-    const fetchAll = async () => {
-      setLoading(true);
-      setErr("");
-      try {
-        console.log("Fetching products from API...");
-        
-        const responses = await Promise.all(
-          CATEGORIES.map((cat) =>
-            axios
-              .get(`${apiUrl}/api/products`, {
-                params: { category: cat },
-              })
-              .then((r) => {
-                const products = Array.isArray(r.data) ? r.data : r.data?.products || [];
-                console.log(`Category ${cat}:`, products.length, "products");
-                return products;
-              })
-              .catch((error) => {
-                console.log(`Error fetching ${cat}:`, error.message);
-                return [];
-              })
-          )
-        );
+  const trackRef = useRef(null);
+  const rotateRef = useRef(null);
+  const pollRef = useRef(null);
 
-        const allProducts = responses.flat();
-        
-        // STRONG Deduplication
-        const seen = new Set();
-        const deduped = [];
-        
-        allProducts.forEach((p) => {
-          const key = p._id || p.id || `${p.name}-${p.price}-${p.image}`;
-          
-          if (!key) {
-            deduped.push(p);
-            return;
-          }
-          
-          if (!seen.has(key)) {
-            seen.add(key);
-            deduped.push(p);
-          }
-        });
+  // fetch logic (same dedupe + interleave + shuffle)
+  const fetchAll = async (cancelToken = null) => {
+    setLoading(true);
+    setErr("");
+    try {
+      const responses = await Promise.all(
+        CATEGORIES.map((cat) =>
+          axios
+            .get(`${apiUrl}/api/products`, {
+              params: { category: cat },
+              cancelToken,
+            })
+            .then((r) => {
+              const products = Array.isArray(r.data) ? r.data : r.data?.products || [];
+              return products;
+            })
+            .catch((error) => {
+              if (axios.isCancel?.(error)) throw error;
+              console.warn(`Error fetching ${cat}:`, error?.message || error);
+              return [];
+            })
+        )
+      );
 
-        console.log("After deduplication:", deduped.length, "products");
+      const allProducts = responses.flat();
 
-        // Ab categories ke hisab se filter karo
-        const categoryWise = CATEGORIES.map(cat => 
-          deduped.filter(p => {
-            const productCategory = (p.category || p.gender || p.segment || "").toLowerCase();
-            return productCategory.includes(cat);
-          })
-        );
-        
-        // Fir interleave aur shuffle karo
-        const mixed = interleave(categoryWise);
-        const shuffled = knuthShuffle(mixed);
-
-        console.log("Final items:", shuffled.length);
-
-        if (!cancelled) {
-          setItems(shuffled);
-          setPage(0);
+      // Strong dedupe
+      const seen = new Set();
+      const deduped = [];
+      allProducts.forEach((p) => {
+        const key = p._id || p.id || `${p.name}-${p.price}-${p.image}` || null;
+        if (!key) {
+          deduped.push(p);
+          return;
         }
-      } catch (e) {
+        if (!seen.has(key)) {
+          seen.add(key);
+          deduped.push(p);
+        }
+      });
+
+      // category-wise filter
+      const categoryWise = CATEGORIES.map((cat) =>
+        deduped.filter((p) => {
+          const productCategory = (p.category || p.gender || p.segment || p.type || "").toLowerCase();
+          return productCategory.includes(cat);
+        })
+      );
+
+      const mixed = interleave(categoryWise);
+      const shuffled = knuthShuffle(mixed);
+
+      setItems(shuffled);
+    } catch (e) {
+      if (!axios.isCancel?.(e)) {
         console.error("Fetch error:", e);
-        if (!cancelled) {
-          setErr("Bestsellers load karne mein dikkat aa gayi.");
-          setItems([]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+        setErr("Bestsellers load karne mein dikkat aa gayi.");
+        setItems([]);
       }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchAll();
+  // initial fetch
+  useEffect(() => {
+    const source = axios.CancelToken.source?.() ?? null;
+    fetchAll(source?.token);
     return () => {
-      cancelled = true;
+      if (source) source.cancel("Unmount");
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiUrl]);
 
-  // Auto-rotate - ONLY if we have more than chunkSize products
+  // polling for dynamic updates
   useEffect(() => {
-    if (paused) return;
-    if (items.length <= chunkSize) return;
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(fetchAll, pollMs);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+      pollRef.current = null;
+    };
+  }, [apiUrl, pollMs]);
 
-    timerRef.current = setInterval(() => {
-      setPage((p) => (p + 1) % Math.max(1, totalPages(items.length, chunkSize)));
+  // responsive visibleCount listener
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mqLg = window.matchMedia("(min-width: 1024px)");
+    const mqMd = window.matchMedia("(min-width: 768px)");
+
+    const update = () => {
+      if (mqLg.matches) setVisibleCount(4);
+      else if (mqMd.matches) setVisibleCount(3);
+      else setVisibleCount(2);
+    };
+
+    // initial
+    update();
+
+    // add listeners (modern browsers)
+    mqLg.addEventListener?.("change", update);
+    mqMd.addEventListener?.("change", update);
+
+    // cleanup
+    return () => {
+      mqLg.removeEventListener("change", update);
+      mqMd.removeEventListener("change", update);
+    };
+  }, []);
+
+  // Auto-rotate by page (page = visibleCount cards)
+  useEffect(() => {
+    if (rotateRef.current) clearInterval(rotateRef.current);
+    if (paused) return;
+    const track = trackRef.current;
+    if (!track) return;
+    if (items.length <= visibleCount) return;
+
+    rotateRef.current = setInterval(() => {
+      const width = track.clientWidth;
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      // if near end -> go to start
+      if (Math.abs(track.scrollLeft - maxScroll) <= 2) {
+        track.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        track.scrollBy({ left: width, behavior: "smooth" });
+      }
     }, rotateMs);
 
-    return () => clearInterval(timerRef.current);
-  }, [items.length, chunkSize, rotateMs, paused]);
+    return () => clearInterval(rotateRef.current);
+  }, [items.length, visibleCount, rotateMs, paused]);
 
-  const slice = useMemo(() => {
-    if (items.length === 0) return [];
-    
-    // Agar products kam hain chunkSize se, toh bas available products show karo
-    if (items.length <= chunkSize) {
-      return items;
-    }
-    
-    const pages = totalPages(items.length, chunkSize);
-    const safePage = page % pages;
-    const start = safePage * chunkSize;
-    const end = start + chunkSize;
-    
-    // Normal slice - no wrap around
-    return items.slice(start, end);
-  }, [items, page, chunkSize]);
-
-  const pagesCount = useMemo(
-    () => totalPages(items.length, chunkSize),
-    [items.length, chunkSize]
-  );
-
+  // Prev/Next
   const goPrev = () => {
-    if (items.length <= chunkSize) return; // No navigation if not enough products
-    setPage((p) => (p - 1 + pagesCount) % pagesCount);
+    const track = trackRef.current;
+    if (!track) return;
+    const width = track.clientWidth;
+    if (track.scrollLeft <= 2) {
+      track.scrollTo({ left: track.scrollWidth - track.clientWidth, behavior: "smooth" });
+    } else {
+      track.scrollBy({ left: -width, behavior: "smooth" });
+    }
   };
-  
   const goNext = () => {
-    if (items.length <= chunkSize) return; // No navigation if not enough products
-    setPage((p) => (p + 1) % pagesCount);
+    const track = trackRef.current;
+    if (!track) return;
+    const width = track.clientWidth;
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    if (Math.abs(track.scrollLeft - maxScroll) <= 2) {
+      track.scrollTo({ left: 0, behavior: "smooth" });
+    } else {
+      track.scrollBy({ left: width, behavior: "smooth" });
+    }
   };
 
   return (
     <section
-      className="container mx-auto px-4 sm:px-6 lg:px-8 py-10"
+      className="container mx-auto px-4 sm:px-6 lg:px-8 pt-10"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={() => setPaused(true)}
@@ -161,8 +198,7 @@ export default function Bestsellers({
           <p className="text-gray-600 mt-1">Top picks across Men, Women and Customize</p>
         </div>
 
-        {/* Desktop arrows - ONLY show if we have enough products */}
-        {items.length > chunkSize && (
+        {items.length > visibleCount && (
           <div className="hidden sm:flex items-center gap-2">
             <button
               className="p-2 rounded-full border border-gray-300 hover:bg-gray-50"
@@ -182,12 +218,11 @@ export default function Bestsellers({
         )}
       </div>
 
-      {/* Loading skeleton */}
       {loading && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Array.from({ length: chunkSize }).map((_, i) => (
             <div key={i} className="border border-gray-200 rounded-2xl p-3 animate-pulse">
-              <div className="w-full aspect-[4/5] bg-gray-200 rounded-xl" />
+              <div className="w-full bg-gray-200 rounded-xl h-44 sm:h-48" />
               <div className="h-4 bg-gray-200 rounded mt-3 w-3/4" />
               <div className="h-4 bg-gray-200 rounded mt-2 w-1/2" />
             </div>
@@ -201,8 +236,8 @@ export default function Bestsellers({
 
       {!loading && !err && (
         <div className="relative">
-          {/* Mobile arrows - ONLY show if we have enough products */}
-          {items.length > chunkSize && (
+          {/* mobile arrows */}
+          {items.length > visibleCount && (
             <div className="sm:hidden flex justify-between mb-3">
               <button
                 className="p-2 rounded-full border border-gray-300 hover:bg-gray-50"
@@ -221,35 +256,28 @@ export default function Bestsellers({
             </div>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {slice.map((p, index) => (
-              <BestCard 
-                key={`${p._id}-${p.id}-${index}`} 
-                product={p} 
-                apiUrl={apiUrl} 
-              />
+          {/* HORIZONTAL TRACK: use LatestProducts-sized cards */}
+          <div
+            ref={trackRef}
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory touch-pan-x hide-scrollbar"
+            role="list"
+            aria-label="Bestselling products"
+          >
+            {items.map((p, idx) => (
+              // use same card sizes as LatestProducts: w-40 sm:w-48 lg:w-52
+              <div
+                key={`${p._id || p.id || idx}`}
+                className="flex-shrink-0 snap-start w-40 sm:w-48 lg:w-52"
+                role="listitem"
+              >
+                <BestCard product={p} apiUrl={apiUrl} />
+              </div>
             ))}
-            
-            {/* Agar products kam hain, toh empty spaces show karo */}
-            {slice.length < chunkSize &&
-              Array.from({ length: chunkSize - slice.length }).map((_, index) => (
-                <div key={`empty-${index}`} className="border border-gray-200 rounded-2xl p-3 opacity-0" />
-              ))
-            }
           </div>
 
-          {/* Dots - ONLY show if we have enough products */}
-          {pagesCount > 1 && (
-            <div className="flex justify-center gap-2 mt-4">
-              {Array.from({ length: pagesCount }).map((_, i) => (
-                <button
-                  key={i}
-                  className={`h-2.5 w-2.5 rounded-full ${i === page ? "bg-black" : "bg-gray-300"}`}
-                  onClick={() => setPage(i)}
-                  aria-label={`Go to slide ${i + 1}`}
-                />
-              ))}
-            </div>
+          {/* Dots: compute pages from items.length and visibleCount */}
+          {items.length > visibleCount && (
+            <ResponsiveDots trackRef={trackRef} itemsLength={items.length} visibleCount={visibleCount} />
           )}
         </div>
       )}
@@ -264,32 +292,77 @@ function BestCard({ product, apiUrl }) {
   const name = product.name || "Product";
   const price = product.price != null ? Number(product.price) : null;
   const img = product.image ? `${apiUrl}${product.image}` : "/placeholder.png";
-  const category =
-    product.category || product.gender || product.segment || product.type || "";
+  const category = product.category || product.gender || product.segment || product.type || "";
 
   return (
     <Link
       to={`/product/${id}`}
       className="group block border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition"
     >
-      <div className="relative w-full aspect-[4/5] bg-gray-50">
-        <img
-          src={img}
-          alt={name}
-          className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => (e.currentTarget.src = "/placeholder.png")}
-        />
-        {category ? (
-          <span className="absolute left-2 top-2 px-2 py-0.5 text-[11px] rounded-full bg-black text-white capitalize">
-            {category}
-          </span>
-        ) : null}
-      </div>
+     {/* IMAGE (LatestProducts style) - FIXED: parent is relative so badge positions correctly */}
+<div className="relative w-full bg-white overflow-hidden rounded-t-2xl">
+  <img
+    src={img}
+    alt={name}
+    className="w-full h-44 sm:h-48 object-contain group-hover:scale-105 transition-transform duration-300"
+    onError={(e) => (e.currentTarget.src = "/placeholder.png")}
+  />
+
+  {category ? (
+    <span
+      className="absolute left-2 top-2 px-2 py-0.5 text-xs rounded-full bg-black text-white capitalize whitespace-nowrap z-10"
+      title={category}
+    >
+      {category}
+    </span>
+  ) : null}
+</div>
+
+
       <div className="p-3">
         <div className="text-sm font-medium text-gray-900 truncate">{name}</div>
         {price != null && <div className="text-sm text-gray-700 mt-1">₹{price.toFixed(2)}</div>}
       </div>
     </Link>
+  );
+}
+
+function ResponsiveDots({ trackRef, itemsLength, visibleCount }) {
+  const [active, setActive] = useState(0);
+  const pages = Math.max(1, Math.ceil(itemsLength / visibleCount));
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const updateActive = () => {
+      // compute page by scrollLeft / clientWidth rounded
+      const page = Math.round(track.scrollLeft / track.clientWidth);
+      setActive(Math.min(page, pages - 1));
+    };
+
+    track.addEventListener("scroll", updateActive, { passive: true });
+    updateActive();
+    return () => track.removeEventListener("scroll", updateActive);
+  }, [trackRef, pages]);
+
+  const goTo = (i) => {
+    const track = trackRef.current;
+    if (!track) return;
+    track.scrollTo({ left: i * track.clientWidth, behavior: "smooth" });
+  };
+
+  return (
+    <div className="flex justify-center gap-2 mt-4">
+      {Array.from({ length: pages }).map((_, i) => (
+        <button
+          key={i}
+          className={`h-2.5 w-2.5 rounded-full ${i === active ? "bg-black" : "bg-gray-300"}`}
+          onClick={() => goTo(i)}
+          aria-label={`Go to page ${i + 1}`}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -300,10 +373,6 @@ function interleave(arrays) {
     for (const arr of arrays) if (arr[i]) out.push(arr[i]);
   }
   return out;
-}
-
-function totalPages(total, chunk) {
-  return Math.max(1, Math.ceil(total / chunk));
 }
 
 function knuthShuffle(a) {

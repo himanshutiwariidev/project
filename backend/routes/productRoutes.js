@@ -9,10 +9,13 @@ const {
   addProduct,
   updateProduct,
   deleteProduct,
+  getLatestProducts,
 } = require('../controllers/productController');
 
 // Routes
 router.get('/', getProducts);                  // Get all products
+router.get('/latest', getLatestProducts);      // ✅ YEH NAYA ROUTE ADD KARO
+
 router.get('/:id', getProductById);            // Get product by ID
 
 // Admin only:

@@ -24,3 +24,11 @@ body {
 main {
   padding-top: 80px; /* Adjust based on your navbar height */
 }
+
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
