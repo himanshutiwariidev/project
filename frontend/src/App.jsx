@@ -9,6 +9,7 @@ import { AuthProvider } from "./context/AuthContext";
 import WishlistPage from "./pages/WishlistPage";
 import MarqueeOffers from "./section/Marquee";
 import ScrollToTop from "./components/ScrollToTop";
+import Collaborate from "./pages/Collaborate";
 
 // Lazy components
 const Navbar = lazy(() => import("./components/navBar"));
@@ -71,6 +72,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/reveiw"  element={<ReviewSubmissionPage/>}/>
             <Route path="/wishlist" element={<WishlistPage/>} />
+            <Route path="/collabration" element={<Collaborate/>}/>
 
             <Route
               path="/checkout"

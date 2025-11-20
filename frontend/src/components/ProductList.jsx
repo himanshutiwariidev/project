@@ -190,15 +190,15 @@ const ProductList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pt-5">
+    <div className="min-h-screen bg-white pt-5 mt-5">
       {/* Header Section */}
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="container mx-auto px-6 lg:px-8 pt-8">
           <div className="text-center space-y-2">
-            <h1 className="text-3xl lg:text-4xl font-bold text-black tracking-wide">
+            <h1 className="text-2xl lg:text-4xl font-semibold md:font-bold text-black tracking-wide">
               {heading}
             </h1>
-            <p className="text-gray-600 font-medium tracking-wide uppercase text-sm">
+            <p className="text-gray-600 font-medium tracking-wide uppercase text-xs md:text-sm">
               Discover Premium Quality Fashion
             </p>
           </div>

@@ -505,7 +505,8 @@ useEffect(() => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="lg:hidden bg-white border-t border-gray-200 max-h-screen overflow-y-auto">
+  // Changes: max-h-screen ko hatakar calculation lagayi hai aur pb-24 add kiya hai
+  <div className="lg:hidden bg-white border-t border-gray-200 max-h-[calc(100vh-100px)] overflow-y-auto pb-20 shadow-xl">
           <button
             onClick={() => handleMobileLinkClick("/")}
             className="block w-full text-left px-6 py-4 text-black hover:bg-gray-50 transition-colors border-b border-gray-100 text-sm font-medium uppercase"

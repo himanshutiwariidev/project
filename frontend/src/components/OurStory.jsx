@@ -24,7 +24,7 @@ export default function OurStory() {
           <div className="w-full lg:w-1/2 bg-black text-white p-5 flex flex-col justify-between">
             <div>
               <h3 className="text-sm tracking-widest uppercase text-gray-200">OUR STORY</h3>
-              <p className="mt-6 text-sm md:text-sm leading-relaxed text-gray-200 max-w-xl">
+              <p className="mt-6 text-xs md:text-sm leading-relaxed text-gray-200 max-w-xl">
                 myriss is all about modern, on-the-move must-haves. We aim to merge
                 high-fashion minimalism with the uniqueness and comfort of athleisure.
                 Our collections are crafted with the best of fabric and premium cotton

@@ -194,8 +194,8 @@ export default function Bestsellers({
     >
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Bestsellers</h2>
-          <p className="text-gray-600 mt-1">Top picks across Men, Women and Customize</p>
+          <h2 className="text-xl md:text-3xl font-semibold md:font-bold tracking-tight">Bestsellers</h2>
+          <p className="text-gray-600 mt-1 text-sm md:text-md">Top picks across Men, Women and Customize</p>
         </div>
 
         {items.length > visibleCount && (

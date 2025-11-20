@@ -215,10 +215,10 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 md:mt-2 md:pt-5">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 mt-2 pt-5">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md border border-gray-200">
         {/* Welcome Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mt-2">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Hello, Welcome!</h1>
           <p className="text-gray-600">Don't have an account?</p>
           <Link 

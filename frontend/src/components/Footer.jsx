@@ -19,9 +19,9 @@ export default function Footer() {
           <h3 className="text-lg font-medium mb-4 uppercase tracking-wider">Shop</h3>
           <ul className="space-y-2 text-gray-400 text-sm">
             <li><a href="#" className="hover:text-white transition">New Arrivals</a></li>
-            <li><a href="#" className="hover:text-white transition">Men</a></li>
-            <li><a href="#" className="hover:text-white transition">Women</a></li>
-            <li><a href="#" className="hover:text-white transition">BestSeller</a></li>
+            <li><a href="/products/men" className="hover:text-white transition">Men</a></li>
+            <li><a href="/products/women" className="hover:text-white transition">Women</a></li>
+            <li><a href="/products/customize" className="hover:text-white transition">Customize</a></li>
           </ul>
         </div>
 
@@ -30,7 +30,7 @@ export default function Footer() {
           <h3 className="text-lg font-medium mb-4 uppercase tracking-wider">Company</h3>
           <ul className="space-y-2 text-gray-400 text-sm">
             <li><a href="#" className="hover:text-white transition">About Us</a></li>
-            <li><a href="/reveiw" className="hover:text-white transition">Your Opinion</a></li>
+            <li><a href="/collabration" className="hover:text-white transition">Collabration</a></li>
             <li><a href="https://wa.me/919220502023?text=Hello%20I%20need%20Help" className="hover:text-white transition">Help Center</a></li>
             <li><a href="https://wa.me/919220502023?text=Hello%20I%20want%20Bulk%20order" className="hover:text-white transition">Bulk order</a></li>
           </ul>
@@ -46,7 +46,7 @@ export default function Footer() {
             </li>
             <li className="flex items-center gap-2">
               <Phone className="w-4 h-4" />
-              <span>+91 98765 43210</span>
+              <span>+91 9220502023</span>
             </li>
             <li className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
