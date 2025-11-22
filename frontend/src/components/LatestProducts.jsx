@@ -1,12 +1,20 @@
 // src/components/LatestProducts.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaCartPlus } from "react-icons/fa";
+
+// Contexts import kiye taaki cart kaam kare
+import { CartContext } from "../context/CartContext";
+import { useUI } from "../context/UIContext";
 
 const LatestProducts = () => {
   const [latestProducts, setLatestProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Context se functions nikale
+  const { addToCart } = useContext(CartContext);
+  const { setShowCartSidebar } = useUI();
 
   const apiUrl = import.meta.env.VITE_API_URL;
   const trackRef = useRef(null);
@@ -32,6 +40,19 @@ const LatestProducts = () => {
 
   const scrollRight = () => {
     trackRef.current.scrollBy({ left: 300, behavior: "smooth" });
+  };
+
+  // Asli Add to Cart Logic (ProductCard wala same logic)
+  const handleAddToCart = (e, product) => {
+    e.preventDefault(); // Link khulne se rokne ke liye
+    e.stopPropagation(); // Event bubbling rokne ke liye
+    
+    addToCart(product); // Cart mein add kiya
+    
+    // Desktop par sidebar open karega (ProductCard jaisa logic)
+    if (window.innerWidth >= 768) {
+      setShowCartSidebar(true);
+    }
   };
 
   return (
@@ -80,32 +101,48 @@ const LatestProducts = () => {
             {latestProducts.map((product) => (
               <div
                 key={product._id}
-                className="w-40 sm:w-48 lg:w-52 flex-shrink-0 snap-start rounded-lg overflow-hidden shadow-lg shadow-gray-200 hover:shadow-md transition-shadow"
+                className="w-40 sm:w-48 lg:w-52 flex-shrink-0 snap-start rounded-lg overflow-hidden shadow-lg shadow-gray-200 hover:shadow-md transition-shadow bg-white"
               >
-                <Link to={`/product/${product._id}`}>
-                  <img
-                    src={`${apiUrl}${product.image}`}
-                    alt={product.name}
-                    className="w-full h-44 sm:h-48 object-contain bg-white"
-                  />
+                <Link to={`/product/${product._id}`} className="block relative">
+                  
+                  {/* Image Section */}
+                  <div className="relative">
+                    <img
+                      src={`${apiUrl}${product.image}`}
+                      alt={product.name}
+                      className="w-full h-44 sm:h-48 object-contain bg-gray-50"
+                    />
+                    
+                    {/* NEW Badge: Top Right */}
+                    <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">
+                      NEW
+                    </span>
+                  </div>
 
                   <div className="p-3">
-                    <h3 className="font-semibold text-sm mb-1 line-clamp-2">
+                     <p className="text-gray-600 text-xs mb-2 capitalize truncate">
+                      {product.category}
+                    </p>
+                    <h3 className="font-semibold text-sm mb-1 line-clamp-2 ">
                       {product.name}
                     </h3>
 
-                    <p className="text-gray-600 text-xs mb-1 capitalize">
-                      {product.category}
-                      {product.subcategory ? ` • ${product.subcategory}` : ""}
-                    </p>
+                   
 
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-black">
-                        ₹{product.price}
+                    <div className="flex items-center justify-between ">
+                      <span className=" text-black text-base">
+                        ₹ {product.price}
                       </span>
-                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                        NEW
-                      </span>
+                      
+                      {/* Cart Button with Logic */}
+                      <button 
+                        onClick={(e) => handleAddToCart(e, product)}
+                        className=" p-2 rounded-full hover:scale-110 transition-colors shadow-md flex items-center justify-center z-20 relative"
+                        title="Add to Cart"
+                      >
+                        <FaCartPlus size={20} />
+                      </button>
+
                     </div>
                   </div>
                 </Link>

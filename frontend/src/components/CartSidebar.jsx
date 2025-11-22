@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 
 const TIERS = [
-  { threshold: 1000, rate: 0.05, label: "5%" },
-  { threshold: 2000, rate: 0.10, label: "10%" },
-  { threshold: 3000, rate: 0.15, label: "15%" },
+  { threshold: 1400, rate: 0.10, label: "10%" },
+  { threshold: 2000, rate: 0.15, label: "15%" },
+  { threshold: 3000, rate: 0.20, label: "20%" },
 ];
 
 const formatINR = (n) =>
@@ -60,7 +60,7 @@ const CartSidebar = ({ onClose }) => {
 
   // Trigger gift popup at 15% tier
   useEffect(() => {
-    if (activeTier?.rate === 0.15) {
+    if (activeTier?.rate === 0.20) {
       setShowGift(true);
     } else {
       setShowGift(false);

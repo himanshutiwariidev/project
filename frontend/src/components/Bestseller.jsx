@@ -1,14 +1,19 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+// src/components/Bestsellers.jsx
+import React, { useEffect, useMemo, useRef, useState, useContext } from "react"; // useContext add kiya
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaCartPlus } from "react-icons/fa"; // FaCartPlus add kiya
+
+// Contexts import kiye
+import { CartContext } from "../context/CartContext";
+import { useUI } from "../context/UIContext";
 
 const CATEGORIES = ["men", "women", "customize"];
 
 export default function Bestsellers({
   chunkSize = 4,
   rotateMs = 6000,
-  pollMs = 30000, // how often to refetch products
+  pollMs = 30000, 
 }) {
   const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -17,7 +22,6 @@ export default function Bestsellers({
   const [items, setItems] = useState([]);
   const [paused, setPaused] = useState(false);
 
-  // visibleCount = how many cards should be visible in viewport (responsive)
   const [visibleCount, setVisibleCount] = useState(() => {
     if (typeof window === "undefined") return chunkSize;
     if (window.matchMedia && window.matchMedia("(min-width: 1024px)").matches) return 4;
@@ -29,7 +33,6 @@ export default function Bestsellers({
   const rotateRef = useRef(null);
   const pollRef = useRef(null);
 
-  // fetch logic (same dedupe + interleave + shuffle)
   const fetchAll = async (cancelToken = null) => {
     setLoading(true);
     setErr("");
@@ -54,8 +57,6 @@ export default function Bestsellers({
       );
 
       const allProducts = responses.flat();
-
-      // Strong dedupe
       const seen = new Set();
       const deduped = [];
       allProducts.forEach((p) => {
@@ -70,7 +71,6 @@ export default function Bestsellers({
         }
       });
 
-      // category-wise filter
       const categoryWise = CATEGORIES.map((cat) =>
         deduped.filter((p) => {
           const productCategory = (p.category || p.gender || p.segment || p.type || "").toLowerCase();
@@ -93,17 +93,14 @@ export default function Bestsellers({
     }
   };
 
-  // initial fetch
   useEffect(() => {
     const source = axios.CancelToken.source?.() ?? null;
     fetchAll(source?.token);
     return () => {
       if (source) source.cancel("Unmount");
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiUrl]);
 
-  // polling for dynamic updates
   useEffect(() => {
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = setInterval(fetchAll, pollMs);
@@ -113,7 +110,6 @@ export default function Bestsellers({
     };
   }, [apiUrl, pollMs]);
 
-  // responsive visibleCount listener
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mqLg = window.matchMedia("(min-width: 1024px)");
@@ -125,21 +121,16 @@ export default function Bestsellers({
       else setVisibleCount(2);
     };
 
-    // initial
     update();
-
-    // add listeners (modern browsers)
     mqLg.addEventListener?.("change", update);
     mqMd.addEventListener?.("change", update);
 
-    // cleanup
     return () => {
       mqLg.removeEventListener("change", update);
       mqMd.removeEventListener("change", update);
     };
   }, []);
 
-  // Auto-rotate by page (page = visibleCount cards)
   useEffect(() => {
     if (rotateRef.current) clearInterval(rotateRef.current);
     if (paused) return;
@@ -150,7 +141,6 @@ export default function Bestsellers({
     rotateRef.current = setInterval(() => {
       const width = track.clientWidth;
       const maxScroll = track.scrollWidth - track.clientWidth;
-      // if near end -> go to start
       if (Math.abs(track.scrollLeft - maxScroll) <= 2) {
         track.scrollTo({ left: 0, behavior: "smooth" });
       } else {
@@ -161,7 +151,6 @@ export default function Bestsellers({
     return () => clearInterval(rotateRef.current);
   }, [items.length, visibleCount, rotateMs, paused]);
 
-  // Prev/Next
   const goPrev = () => {
     const track = trackRef.current;
     if (!track) return;
@@ -236,7 +225,6 @@ export default function Bestsellers({
 
       {!loading && !err && (
         <div className="relative">
-          {/* mobile arrows */}
           {items.length > visibleCount && (
             <div className="sm:hidden flex justify-between mb-3">
               <button
@@ -256,15 +244,13 @@ export default function Bestsellers({
             </div>
           )}
 
-          {/* HORIZONTAL TRACK: use LatestProducts-sized cards */}
           <div
             ref={trackRef}
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory  hide-scrollbar"
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory hide-scrollbar"
             role="list"
             aria-label="Bestselling products"
           >
             {items.map((p, idx) => (
-              // use same card sizes as LatestProducts: w-40 sm:w-48 lg:w-52
               <div
                 key={`${p._id || p.id || idx}`}
                 className="flex-shrink-0 snap-start w-40 sm:w-48 lg:w-52"
@@ -275,7 +261,6 @@ export default function Bestsellers({
             ))}
           </div>
 
-          {/* Dots: compute pages from items.length and visibleCount */}
           {items.length > visibleCount && (
             <ResponsiveDots trackRef={trackRef} itemsLength={items.length} visibleCount={visibleCount} />
           )}
@@ -285,43 +270,71 @@ export default function Bestsellers({
   );
 }
 
-/* ----------------------- sub components & utils ----------------------- */
+/* ----------------------- BestCard Component with Cart ----------------------- */
 
 function BestCard({ product, apiUrl }) {
+  // Hooks for Cart functionality
+  const { addToCart } = useContext(CartContext);
+  const { setShowCartSidebar } = useUI();
+
   const id = product._id || product.id;
   const name = product.name || "Product";
   const price = product.price != null ? Number(product.price) : null;
   const img = product.image ? `${apiUrl}${product.image}` : "/placeholder.png";
   const category = product.category || product.gender || product.segment || product.type || "";
 
+  // Handle Add to Cart
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product);
+    if (window.innerWidth >= 768) {
+      setShowCartSidebar(true);
+    }
+  };
+
   return (
     <Link
       to={`/product/${id}`}
-      className="group block border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition"
+      className="group block border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition bg-white"
     >
-     {/* IMAGE (LatestProducts style) - FIXED: parent is relative so badge positions correctly */}
-<div className="relative w-full bg-white overflow-hidden rounded-t-2xl">
-  <img
-    src={img}
-    alt={name}
-    className="w-full h-44 sm:h-48 object-contain group-hover:scale-105 transition-transform duration-300"
-    onError={(e) => (e.currentTarget.src = "/placeholder.png")}
-  />
+      {/* IMAGE SECTION */}
+      <div className="relative w-full bg-white overflow-hidden rounded-t-2xl">
+        <img
+          src={img}
+          alt={name}
+          className="w-full h-44 sm:h-48 object-contain group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => (e.currentTarget.src = "/placeholder.png")}
+        />
 
-  {category ? (
-    <span
-      className="absolute left-2 top-2 px-2 py-0.5 text-xs rounded-full bg-black text-white capitalize whitespace-nowrap z-10"
-      title={category}
-    >
-      {category}
-    </span>
-  ) : null}
-</div>
+        {category && (
+          <span
+            className="absolute left-2 top-2 px-2 py-0.5 text-xs rounded-full bg-black text-white capitalize whitespace-nowrap z-10"
+            title={category}
+          >
+            {category}
+          </span>
+        )}
+      </div>
 
-
+      {/* DETAILS SECTION */}
       <div className="p-3">
-        <div className="text-sm font-medium text-gray-900 truncate">{name}</div>
-        {price != null && <div className="text-sm text-gray-700 mt-1">₹{price.toFixed(2)}</div>}
+        <div className="text-sm font-semibold text-gray-900 truncate">{name}</div>
+        
+        {/* Price + Cart Button Row */}
+        <div className="flex items-center justify-between mt-2">
+          {price != null && (
+            <div className="text-base  text-gray-900">₹{price.toFixed(2)}</div>
+          )}
+          
+          <button 
+            onClick={handleAddToCart}
+            className=" p-2 rounded-full hover:scale-110 transition-colors shadow-md flex items-center justify-center z-20 relative"
+            title="Add to Cart"
+          >
+            <FaCartPlus size={20} />
+          </button>
+        </div>
       </div>
     </Link>
   );
@@ -336,7 +349,6 @@ function ResponsiveDots({ trackRef, itemsLength, visibleCount }) {
     if (!track) return;
 
     const updateActive = () => {
-      // compute page by scrollLeft / clientWidth rounded
       const page = Math.round(track.scrollLeft / track.clientWidth);
       setActive(Math.min(page, pages - 1));
     };

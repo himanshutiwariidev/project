@@ -315,7 +315,7 @@ const ProductDetailPage = () => {
   const totalPrice = product.price * quantity;
 
   return (
-    <div className="min-h-screen bg-white pt-7">
+    <div className="min-h-screen bg-white pt-7 mt-5">
       {toast && (
         <div className={`fixed top-24 right-6 z-50 p-4 rounded border-l-4 shadow-lg transition-all duration-300 ${toast.type === "success"
             ? "bg-white border-green-500 text-green-800"

@@ -1,5 +1,5 @@
 import { Facebook, Instagram, Twitter, Linkedin, Mail, Phone, MapPin } from "lucide-react";
-
+import logo from "../assets/myrisslogo.png"
 export default function Footer() {
   return (
     <footer className="bg-black text-white py-14 px-6 md:px-20 font-sans">
@@ -8,6 +8,7 @@ export default function Footer() {
         
         {/* Brand Section */}
         <div>
+          <img src={logo} alt=""  className="h-15" />
           <h1 className="text-3xl font-bold tracking-wide mb-3">MYRISS</h1>
           <p className="text-gray-400 text-sm leading-relaxed">
             Elevate your lifestyle with MYRISS — where timeless design meets modern simplicity.
@@ -18,10 +19,11 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-medium mb-4 uppercase tracking-wider">Shop</h3>
           <ul className="space-y-2 text-gray-400 text-sm">
-            <li><a href="#" className="hover:text-white transition">New Arrivals</a></li>
             <li><a href="/products/men" className="hover:text-white transition">Men</a></li>
             <li><a href="/products/women" className="hover:text-white transition">Women</a></li>
             <li><a href="/products/customize" className="hover:text-white transition">Customize</a></li>
+            <li><a href="/products?sort=newest" className="hover:text-white transition">New Arrivals</a></li>
+
           </ul>
         </div>
 

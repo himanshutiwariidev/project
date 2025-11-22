@@ -1,10 +1,9 @@
 
 
 import React from 'react';
-import { GiAirplane, GiSuitcase, GiFeather } from 'react-icons/gi';
-import { HiOutlineHome } from 'react-icons/hi';
-import { FiFolder } from 'react-icons/fi';
-import { FaChevronUp } from 'react-icons/fa';
+
+import { FaRupeeSign, FaTshirt, FaMedal, FaPalette } from "react-icons/fa"; 
+import { GiHoodie } from "react-icons/gi";
 
 // Example image imports - replace with your own
  import img1 from '../assets/storyimage/4.jpg';
@@ -25,23 +24,48 @@ export default function OurStory() {
             <div>
               <h3 className="text-sm tracking-widest uppercase text-gray-200">OUR STORY</h3>
               <p className="mt-6 text-xs md:text-sm leading-relaxed text-gray-200 max-w-xl">
-                myriss is all about modern, on-the-move must-haves. We aim to merge
-                high-fashion minimalism with the uniqueness and comfort of athleisure.
-                Our collections are crafted with the best of fabric and premium cotton
-                and our silhouettes are high on the trend quotient. Elevate your every day
-                look with our stylish and functional essentials, travel wear, and lounge wear.
-                You'll always be adventure-ready with myriss.
+              Myriss is all about everyday essentials designed for real people on the move.
+We bring together pocket-friendly pricing with streetwear-inspired style, delivering fresh designs that elevate your daily look. Every product is crafted with quality materials, smart utility, and all-day comfort in mind.
+From college days to work runs, from casual outings to city commutes—Myriss fits effortlessly into your lifestyle.
+With new designs dropping regularly and comfort you can rely on, Myriss keeps you ready for every day, every moment.
+Stay light. Stay stylish. Stay Myriss.
               </p>
             </div>
 
             <div className="mt-0">
-              <div className="grid grid-cols-5 gap-4 items-center text-center">
-                <Feature icon={<GiAirplane size={24} />} label="On the move" />
-                <Feature icon={<GiSuitcase size={24} />} label="Travel Friendly" />
-                <Feature icon={<FiFolder size={24} />} label="Utilitarian Designs" />
-                <Feature icon={<GiFeather size={24} />} label="Light weight" />
-                <Feature icon={<HiOutlineHome size={24} />} label="Home Grown" />
-              </div>
+             <div className="grid grid-cols-5 gap-4 items-center text-center">
+  
+  {/* 1. Pocket Friendly -> Rupee Sign (Affordable) */}
+  <Feature 
+    icon={<FaRupeeSign size={24} />} 
+    label="Pocket friendly" 
+  />
+
+  {/* 2. Street Wear -> Hoodie Icon (Urban/Street style) */}
+  <Feature 
+    icon={<GiHoodie size={24} />} 
+    label="Street wear" 
+  />
+
+  {/* 3. Every Day New Design -> Palette (Creativity/Newness) */}
+  <Feature 
+    icon={<FaPalette size={24} />} 
+    label="New designs" 
+  />
+
+  {/* 4. Quality Assured -> Medal (Premium/Trust) */}
+  <Feature 
+    icon={<FaMedal size={24} />} 
+    label="Quality Assured" 
+  />
+
+  {/* 5. Daily Wear Comfort -> T-shirt (Casual/Daily use) */}
+  <Feature 
+    icon={<FaTshirt size={24} />} 
+    label="Daily wear comfort" 
+  />
+
+</div>
             </div>
           </div>
 
