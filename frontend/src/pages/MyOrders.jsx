@@ -461,13 +461,13 @@ const MyOrders = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-18 mt-5">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">My Orders</h1>
             <p className="text-gray-600">Track orders and coin status</p>
           </div>
-          <div className="mt-4 sm:mt-0 flex items-center gap-2 bg-gradient-to-r from-gray-900 to-gray-700 text-white px-6 py-3 rounded-full shadow-lg">
+          <div className="mt-4 sm:mt-0 flex items-center justify-center gap-2 bg-gradient-to-r from-gray-900 to-gray-700 text-white px-6 py-3 rounded-full shadow-lg">
             <Coins className="w-5 h-5" />
             <span className="font-bold text-lg">{coinBalance}</span>
             <span className="text-sm opacity-90">Coins Available</span>

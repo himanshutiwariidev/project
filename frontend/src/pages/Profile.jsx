@@ -405,7 +405,7 @@ useEffect(() => {
                             type="text"
                             value={tempName}
                             onChange={(e) => setTempName(e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg text-gray-900 text-sm"
+                            className="w-full px-3 py-2 rounded-lg text-white text-sm"
                             disabled={updating}
                             placeholder="Enter your name"
                           />
