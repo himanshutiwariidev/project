@@ -58,7 +58,7 @@ exports.createOrder = async (req, res) => {
 
     const redeemable = Math.min(redeemRequested, user.coinsBalance, totalAmount);
     const payableAmount = Math.max(0, totalAmount - redeemable);
-    const coinsEarned = Math.floor(payableAmount * 0.10); // 10%
+    const coinsEarned = Math.floor(payableAmount * 0.01); // 1%
 
     // Build order items (with selectedSize/Color)
     // Expect each item: { product: <id>, quantity, selectedSize?, selectedColor? }
