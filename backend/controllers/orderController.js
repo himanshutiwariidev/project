@@ -216,7 +216,7 @@ exports.getMyOrders = async (req, res) => {
   }
 };
 
-// UPDATED: Order status update function
+// UPDATED: Order status update function (with paymentStatus control)
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { id, status } = req.body;
@@ -226,10 +226,26 @@ exports.updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // If order is cancelled/returned, cancel the pending coins
+    // 1) Cancel/return par pending coins cancel
     if (['cancelled', 'returned'].includes(status) && order.coinStatus === 'pending') {
       order.coinStatus = 'cancelled';
       console.log(`❌ Coins cancelled for order ${id} due to ${status}`);
+    }
+
+    // 2) Admin status ke through paymentStatus bhi control kare
+    if (status === 'delivered') {
+      // COD + Online dono ke liye – delivered ka matlab payment mil gaya
+      order.paymentStatus = 'Paid';
+    } else if (status === 'pending' || status === 'confirmed') {
+      // Optional: agar wapas pending/confirmed karo to payment bhi Pending
+      if (order.paymentStatus !== 'Paid') {
+        order.paymentStatus = 'Pending';
+      }
+    } else if (status === 'cancelled') {
+      // Optional: cancel hone par payment ko Refunded/Fails jaisa rakh sakte ho
+      if (order.paymentStatus === 'Pending') {
+        order.paymentStatus = 'Failed';
+      }
     }
 
     order.orderStatus = status;
@@ -241,6 +257,7 @@ exports.updateOrderStatus = async (req, res) => {
     res.status(500).json({ message: "Failed to update status" });
   }
 };
+
 
 // NEW: Function to credit pending coins (for cron job)
 exports.creditPendingCoins = async () => {
