@@ -18,21 +18,21 @@ const MarqueeOffers = () => {
         <div className="flex items-center space-x-2 mx-10 text-lg font-medium">
           <GiShoppingBag className="text-yellow-400" />
           <span>
-            Orders over ₹1999 get <span className="text-yellow-400 font-bold">5% OFF</span>
+            Orders over ₹1399 get <span className="text-yellow-400 font-bold">10% OFF</span>
           </span>
         </div>
 
         <div className="flex items-center space-x-2 mx-10 text-lg font-medium">
           <GiShoppingBag className="text-green-400" />
           <span>
-            Above ₹3999 get <span className="text-green-400 font-bold">10% OFF</span>
+            Above ₹1999 get <span className="text-green-400 font-bold">15% OFF</span>
           </span>
         </div>
 
         <div className="flex items-center space-x-2 mx-10 text-lg font-medium">
           <GiShoppingBag className="text-blue-400" />
           <span>
-            Over ₹5999 get <span className="text-blue-400 font-bold">15% OFF</span>
+            Over ₹2999 get <span className="text-blue-400 font-bold">20% OFF</span>
           </span>
         </div>
 
